@@ -603,17 +603,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#planned-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Planned examples
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -625,10 +614,87 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#basic-usage-pattern" class="md-nav__link">
+  <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic usage pattern
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health_check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        health_check
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#queue_depth_monitor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        queue_depth_monitor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#channel_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        channel_status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#queue_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        queue_status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dlq_inspector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dlq_inspector
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provision_environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provision_environment
       
     </span>
   </a>
@@ -2967,17 +3033,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#planned-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Planned examples
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2989,10 +3044,87 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#basic-usage-pattern" class="md-nav__link">
+  <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic usage pattern
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health_check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        health_check
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#queue_depth_monitor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        queue_depth_monitor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#channel_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        channel_status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#queue_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        queue_status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dlq_inspector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dlq_inspector
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provision_environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provision_environment
       
     </span>
   </a>
@@ -3017,67 +3149,102 @@
 
 
 <h1 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The <code>examples/</code> directory is not yet available in the Rust implementation.
-Example programs demonstrating common MQ administration tasks are planned
-for a future release.</p>
-</div>
-<h2 id="planned-examples">Planned examples<a class="headerlink" href="#planned-examples" title="Permanent link">&para;</a></h2>
-<p>The following examples from the Python reference implementation will be
-adapted for Rust:</p>
-<ul>
-<li><strong>Health check</strong> — Connect to queue managers and verify status</li>
-<li><strong>Queue depth monitor</strong> — List queues and flag those approaching capacity</li>
-<li><strong>Channel status report</strong> — Cross-reference definitions with live status</li>
-<li><strong>Queue status and handles</strong> — Demonstrate nested object flattening</li>
-<li><strong>Dead letter queue inspector</strong> — Inspect DLQ configuration and depth</li>
-<li><strong>Environment provisioner</strong> — Bulk provisioning across multiple queue managers</li>
-</ul>
+<p>The <code>examples/</code> directory contains standalone programs demonstrating common
+MQ administration tasks. Each example is a complete <code>fn main()</code> binary that
+can be run with <code>cargo run --example &lt;name&gt;</code>.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>When examples are available, they will use the same local Docker environment:</p>
+<p>Start the local MQ development environment before running examples:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./scripts/dev/mq_start.sh
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>./scripts/dev/mq_seed.sh
 </code></pre></div>
 <p>This starts two queue managers (<code>QM1</code> on port 9443, <code>QM2</code> on port 9444) on a
 shared Docker network. See <a href="../development/local-mq-container/">local MQ container</a> for details.</p>
-<h2 id="basic-usage-pattern">Basic usage pattern<a class="headerlink" href="#basic-usage-pattern" title="Permanent link">&para;</a></h2>
-<p>Until dedicated examples are available, here is the basic pattern for using
-the library:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">use</span><span class="w"> </span><span class="n">mq_rest_admin</span><span class="p">::{</span><span class="n">MqRestSession</span><span class="p">,</span><span class="w"> </span><span class="n">Credentials</span><span class="p">,</span><span class="w"> </span><span class="n">MqRestError</span><span class="p">};</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">fn</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">MqRestError</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">session</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MqRestSession</span><span class="p">::</span><span class="n">builder</span><span class="p">()</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="p">.</span><span class="n">rest_base_url</span><span class="p">(</span><span class="s">&quot;https://localhost:9443/ibmmq/rest/v2&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="p">.</span><span class="n">qmgr_name</span><span class="p">(</span><span class="s">&quot;QM1&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="p">.</span><span class="n">credentials</span><span class="p">(</span><span class="n">Credentials</span><span class="p">::</span><span class="n">Ltpa</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">            </span><span class="n">username</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;mqadmin&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">            </span><span class="n">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;mqadmin&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">        </span><span class="p">})</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="p">.</span><span class="n">verify_tls</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="p">.</span><span class="n">build</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="c1">// Health check</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">qmgr</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="p">.</span><span class="n">display_qmgr</span><span class="p">(</span><span class="nb">None</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">)</span><span class="o">?</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;Queue manager: {:?}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">qmgr</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;queue_manager_name&quot;</span><span class="p">));</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="c1">// List queues</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">queues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">session</span><span class="p">.</span><span class="n">display_queue</span><span class="p">(</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">        </span><span class="nb">Some</span><span class="p">(</span><span class="s">&quot;DEV.*&quot;</span><span class="p">),</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">        </span><span class="nb">None</span><span class="p">,</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">        </span><span class="nb">Some</span><span class="p">(</span><span class="fm">vec!</span><span class="p">[</span><span class="s">&quot;current_queue_depth&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;max_queue_depth&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">()]),</span>
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">        </span><span class="nb">None</span><span class="p">,</span>
-<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">    </span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
-<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">queue</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">&amp;</span><span class="n">queues</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}: depth {:?}&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">            </span><span class="n">queue</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;queue_name&quot;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">(),</span>
-<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">            </span><span class="n">queue</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;current_queue_depth&quot;</span><span class="p">));</span>
-<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>
-<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
-<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="p">}</span>
+<h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
+<p>All examples read connection details from environment variables with sensible
+defaults:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MQ_REST_BASE_URL</code></td>
+<td><code>https://localhost:9443/ibmmq/rest/v2</code></td>
+<td>QM1 REST endpoint</td>
+</tr>
+<tr>
+<td><code>MQ_QMGR_NAME</code></td>
+<td><code>QM1</code></td>
+<td>Queue manager name</td>
+</tr>
+<tr>
+<td><code>MQ_ADMIN_USER</code></td>
+<td><code>mqadmin</code></td>
+<td>Admin username</td>
+</tr>
+<tr>
+<td><code>MQ_ADMIN_PASSWORD</code></td>
+<td><code>mqadmin</code></td>
+<td>Admin password</td>
+</tr>
+<tr>
+<td><code>MQ_REST_BASE_URL_QM2</code></td>
+<td><code>https://localhost:9444/ibmmq/rest/v2</code></td>
+<td>QM2 REST endpoint (multi-QM examples)</td>
+</tr>
+<tr>
+<td><code>DEPTH_THRESHOLD_PCT</code></td>
+<td><code>80</code></td>
+<td>Warning threshold for queue depth monitor</td>
+</tr>
+</tbody>
+</table>
+<h2 id="running-examples">Running examples<a class="headerlink" href="#running-examples" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>health_check
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>queue_depth_monitor
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>channel_status
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>queue_status
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>dlq_inspector
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>provision_environment
+</code></pre></div>
+<h2 id="health_check">health_check<a class="headerlink" href="#health_check" title="Permanent link">&para;</a></h2>
+<p>Connects to one or more queue managers and checks QMGR status, command server
+availability, and listener state. Produces a pass/fail summary for each queue
+manager.</p>
+<p>Set <code>MQ_REST_BASE_URL_QM2</code> to also check QM2.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>health_check
+</code></pre></div>
+<h2 id="queue_depth_monitor">queue_depth_monitor<a class="headerlink" href="#queue_depth_monitor" title="Permanent link">&para;</a></h2>
+<p>Displays local queues with their current depth, flags queues approaching
+capacity, and sorts by depth percentage descending. Configure the warning
+threshold with <code>DEPTH_THRESHOLD_PCT</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>queue_depth_monitor
+</code></pre></div>
+<h2 id="channel_status">channel_status<a class="headerlink" href="#channel_status" title="Permanent link">&para;</a></h2>
+<p>Displays channel definitions alongside live channel status. Identifies channels
+that are defined but not running and shows connection details.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>channel_status
+</code></pre></div>
+<h2 id="queue_status">queue_status<a class="headerlink" href="#queue_status" title="Permanent link">&para;</a></h2>
+<p>Demonstrates <code>DISPLAY QSTATUS TYPE(HANDLE)</code> and <code>DISPLAY CONN TYPE(HANDLE)</code>
+queries, showing how <code>mq-rest-admin</code> transparently flattens the nested <code>objects</code>
+response structure into uniform flat <code>HashMap</code>s.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>queue_status
+</code></pre></div>
+<h2 id="dlq_inspector">dlq_inspector<a class="headerlink" href="#dlq_inspector" title="Permanent link">&para;</a></h2>
+<p>Checks the dead letter queue configuration for a queue manager, reports its
+depth and capacity, and suggests actions when messages are present.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>dlq_inspector
+</code></pre></div>
+<h2 id="provision_environment">provision_environment<a class="headerlink" href="#provision_environment" title="Permanent link">&para;</a></h2>
+<p>Defines a complete set of queues, channels, and remote queue definitions across
+two queue managers, then verifies connectivity. Includes teardown to remove all
+provisioned objects. Requires both QM1 and QM2 to be running.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>--example<span class="w"> </span>provision_environment
 </code></pre></div>
 
 
