@@ -1,6 +1,6 @@
 [package]
 name = "mq-rest-admin"
-version = "0.1.0"
+version = "1.2.0"
 edition = "2024"
 rust-version = "1.92"
 description = "Rust wrapper for the IBM MQ administrative REST API"
@@ -14,3 +14,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"], def
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+base64 = "0.22"
+
+[features]
+integration = []
