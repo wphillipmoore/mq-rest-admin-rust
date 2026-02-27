@@ -18,17 +18,28 @@ shared Docker network. See [local MQ container](development/local-mq-container.m
 
 ## Environment variables
 
-All examples read connection details from environment variables with sensible
-defaults:
+All examples require the following environment variables to be set. The
+examples will panic with a descriptive message if any required variable is
+missing.
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `MQ_REST_BASE_URL` | `https://localhost:9443/ibmmq/rest/v2` | QM1 REST endpoint |
-| `MQ_QMGR_NAME` | `QM1` | Queue manager name |
-| `MQ_ADMIN_USER` | `mqadmin` | Admin username |
-| `MQ_ADMIN_PASSWORD` | `mqadmin` | Admin password |
-| `MQ_REST_BASE_URL_QM2` | `https://localhost:9444/ibmmq/rest/v2` | QM2 REST endpoint (multi-QM examples) |
-| `DEPTH_THRESHOLD_PCT` | `80` | Warning threshold for queue depth monitor |
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `MQ_REST_BASE_URL` | Yes | QM1 REST endpoint |
+| `MQ_QMGR_NAME` | Yes | Queue manager name |
+| `MQ_ADMIN_USER` | Yes | Admin username |
+| `MQ_ADMIN_PASSWORD` | Yes | Admin password |
+| `MQ_REST_BASE_URL_QM2` | Multi-QM only | QM2 REST endpoint (provision, health check) |
+| `DEPTH_THRESHOLD_PCT` | No (default: 80) | Warning threshold for queue depth monitor |
+
+For the local dev environment:
+
+```bash
+export MQ_REST_BASE_URL="https://localhost:9443/ibmmq/rest/v2"
+export MQ_QMGR_NAME="QM1"
+export MQ_ADMIN_USER="mqadmin"
+export MQ_ADMIN_PASSWORD="mqadmin"
+export MQ_REST_BASE_URL_QM2="https://localhost:9444/ibmmq/rest/v2"
+```
 
 ## Running examples
 

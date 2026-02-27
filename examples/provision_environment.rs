@@ -276,14 +276,15 @@ fn teardown(qm1: &mut MqRestSession, qm2: &mut MqRestSession) -> Vec<String> {
     failures
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let username = env::var("MQ_ADMIN_USER").unwrap_or_else(|_| "mqadmin".into());
-    let password = env::var("MQ_ADMIN_PASSWORD").unwrap_or_else(|_| "mqadmin".into());
+fn require_env(key: &str) -> String {
+    env::var(key).unwrap_or_else(|_| panic!("{key} environment variable is required"))
+}
 
-    let qm1_url = env::var("MQ_REST_BASE_URL")
-        .unwrap_or_else(|_| "https://localhost:9443/ibmmq/rest/v2".into());
-    let qm2_url = env::var("MQ_REST_BASE_URL_QM2")
-        .unwrap_or_else(|_| "https://localhost:9444/ibmmq/rest/v2".into());
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let username = require_env("MQ_ADMIN_USER");
+    let password = require_env("MQ_ADMIN_PASSWORD");
+    let qm1_url = require_env("MQ_REST_BASE_URL");
+    let qm2_url = require_env("MQ_REST_BASE_URL_QM2");
 
     let mut qm1 = MqRestSession::builder(
         &qm1_url,

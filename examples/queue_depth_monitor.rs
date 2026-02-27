@@ -41,12 +41,15 @@ struct QueueDepthInfo {
     warning: bool,
 }
 
+fn require_env(key: &str) -> String {
+    env::var(key).unwrap_or_else(|_| panic!("{key} environment variable is required"))
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let rest_base_url = env::var("MQ_REST_BASE_URL")
-        .unwrap_or_else(|_| "https://localhost:9443/ibmmq/rest/v2".into());
-    let qmgr_name = env::var("MQ_QMGR_NAME").unwrap_or_else(|_| "QM1".into());
-    let username = env::var("MQ_ADMIN_USER").unwrap_or_else(|_| "mqadmin".into());
-    let password = env::var("MQ_ADMIN_PASSWORD").unwrap_or_else(|_| "mqadmin".into());
+    let rest_base_url = require_env("MQ_REST_BASE_URL");
+    let qmgr_name = require_env("MQ_QMGR_NAME");
+    let username = require_env("MQ_ADMIN_USER");
+    let password = require_env("MQ_ADMIN_PASSWORD");
     let threshold_pct: f64 = env::var("DEPTH_THRESHOLD_PCT")
         .unwrap_or_else(|_| "80".into())
         .parse()
