@@ -21,12 +21,12 @@ pub fn map_request_attributes(
     mapping_data: Option<&Value>,
 ) -> std::result::Result<HashMap<String, Value>, MappingError> {
     let data = mapping_data.unwrap_or(&MAPPING_DATA);
-    let Some(qd) = get_qualifier_data(qualifier, data) else {
+    let Some(qualifier_data) = get_qualifier_data(qualifier, data) else {
         return handle_unknown_qualifier(qualifier, attributes, "request", strict);
     };
-    let key_map = get_string_map(qd, "request_key_map");
-    let key_value_map = get_key_value_map(qd, "request_key_value_map");
-    let value_map = get_nested_string_map(qd, "request_value_map");
+    let key_map = get_string_map(qualifier_data, "request_key_map");
+    let key_value_map = get_key_value_map(qualifier_data, "request_key_value_map");
+    let value_map = get_nested_string_map(qualifier_data, "request_value_map");
     map_attributes(
         qualifier,
         attributes,
@@ -51,14 +51,20 @@ pub fn map_response_attributes(
     mapping_data: Option<&Value>,
 ) -> std::result::Result<HashMap<String, Value>, MappingError> {
     let data = mapping_data.unwrap_or(&MAPPING_DATA);
-    let Some(qd) = get_qualifier_data(qualifier, data) else {
+    let Some(qualifier_data) = get_qualifier_data(qualifier, data) else {
         return handle_unknown_qualifier(qualifier, attributes, "response", strict);
     };
-    let key_map = get_string_map(qd, "response_key_map");
-    let value_map = get_nested_string_map(qd, "response_value_map");
-    let empty_kvm = HashMap::new();
+    let key_map = get_string_map(qualifier_data, "response_key_map");
+    let value_map = get_nested_string_map(qualifier_data, "response_value_map");
+    let empty_key_value_map = HashMap::new();
     map_attributes(
-        qualifier, attributes, &key_map, &empty_kvm, &value_map, "response", strict,
+        qualifier,
+        attributes,
+        &key_map,
+        &empty_key_value_map,
+        &value_map,
+        "response",
+        strict,
     )
 }
 
@@ -75,12 +81,12 @@ pub fn map_response_list(
     mapping_data: Option<&Value>,
 ) -> std::result::Result<Vec<HashMap<String, Value>>, MappingError> {
     let data = mapping_data.unwrap_or(&MAPPING_DATA);
-    let Some(qd) = get_qualifier_data(qualifier, data) else {
+    let Some(qualifier_data) = get_qualifier_data(qualifier, data) else {
         return handle_unknown_qualifier_list(qualifier, objects, "response", strict);
     };
-    let key_map = get_string_map(qd, "response_key_map");
-    let value_map = get_nested_string_map(qd, "response_value_map");
-    let empty_kvm = HashMap::new();
+    let key_map = get_string_map(qualifier_data, "response_key_map");
+    let value_map = get_nested_string_map(qualifier_data, "response_value_map");
+    let empty_key_value_map = HashMap::new();
     let mut mapped_objects = Vec::with_capacity(objects.len());
     let mut issues = Vec::new();
     for (object_index, attributes) in objects.iter().enumerate() {
@@ -88,7 +94,7 @@ pub fn map_response_list(
             qualifier,
             attributes,
             &key_map,
-            &empty_kvm,
+            &empty_key_value_map,
             &value_map,
             "response",
             Some(object_index),
@@ -109,9 +115,9 @@ fn get_qualifier_data<'a>(qualifier: &str, data: &'a Value) -> Option<&'a Value>
 fn get_string_map(qualifier_data: &Value, map_name: &str) -> HashMap<String, String> {
     let mut result = HashMap::new();
     if let Some(obj) = qualifier_data.get(map_name).and_then(Value::as_object) {
-        for (k, v) in obj {
-            if let Some(s) = v.as_str() {
-                result.insert(k.clone(), s.to_owned());
+        for (key, value) in obj {
+            if let Some(s) = value.as_str() {
+                result.insert(key.clone(), s.to_owned());
             }
         }
     }
@@ -124,15 +130,15 @@ fn get_nested_string_map(
 ) -> HashMap<String, HashMap<String, String>> {
     let mut result = HashMap::new();
     if let Some(obj) = qualifier_data.get(map_name).and_then(Value::as_object) {
-        for (k, v) in obj {
-            if let Some(inner) = v.as_object() {
+        for (key, value) in obj {
+            if let Some(inner) = value.as_object() {
                 let mut inner_map = HashMap::new();
-                for (ik, iv) in inner {
-                    if let Some(s) = iv.as_str() {
-                        inner_map.insert(ik.clone(), s.to_owned());
+                for (inner_key, inner_value) in inner {
+                    if let Some(s) = inner_value.as_str() {
+                        inner_map.insert(inner_key.clone(), s.to_owned());
                     }
                 }
-                result.insert(k.clone(), inner_map);
+                result.insert(key.clone(), inner_map);
             }
         }
     }
@@ -144,21 +150,21 @@ type KeyValueMap = HashMap<String, HashMap<String, HashMap<String, String>>>;
 fn get_key_value_map(qualifier_data: &Value, map_name: &str) -> KeyValueMap {
     let mut result = HashMap::new();
     if let Some(obj) = qualifier_data.get(map_name).and_then(Value::as_object) {
-        for (k, v) in obj {
-            if let Some(inner) = v.as_object() {
+        for (key, value) in obj {
+            if let Some(inner) = value.as_object() {
                 let mut inner_map = HashMap::new();
-                for (ik, iv) in inner {
-                    if let Some(nested) = iv.as_object() {
+                for (inner_key, inner_value) in inner {
+                    if let Some(nested) = inner_value.as_object() {
                         let mut nested_map = HashMap::new();
-                        for (nk, nv) in nested {
-                            if let Some(s) = nv.as_str() {
-                                nested_map.insert(nk.clone(), s.to_owned());
+                        for (nested_key, nested_value) in nested {
+                            if let Some(s) = nested_value.as_str() {
+                                nested_map.insert(nested_key.clone(), s.to_owned());
                             }
                         }
-                        inner_map.insert(ik.clone(), nested_map);
+                        inner_map.insert(inner_key.clone(), nested_map);
                     }
                 }
-                result.insert(k.clone(), inner_map);
+                result.insert(key.clone(), inner_map);
             }
         }
     }
