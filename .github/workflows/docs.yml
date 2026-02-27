@@ -1,0 +1,40 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: "deploy: docs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install mkdocs and mike
+        run: pip install mkdocs-material mike
+
+      - name: Deploy docs
+        uses: wphillipmoore/standard-actions/actions/docs-deploy@develop
+        with:
+          version-command: grep -oP '^version\s*=\s*"\K[^"]+' Cargo.toml | cut -d. -f1,2
+          mike-command: mike
+          checkout-common: "true"

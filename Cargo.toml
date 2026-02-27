@@ -1,0 +1,16 @@
+[package]
+name = "mq-rest-admin"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+description = "Rust wrapper for the IBM MQ administrative REST API"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/wphillipmoore/mq-rest-admin-rust"
+keywords = ["ibm-mq", "rest-api", "mqsc", "message-queue"]
+categories = ["api-bindings"]
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"], default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"

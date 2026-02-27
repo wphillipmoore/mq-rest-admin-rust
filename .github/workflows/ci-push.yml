@@ -1,0 +1,25 @@
+name: CI (push)
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - "bugfix/**"
+      - "hotfix/**"
+      - "chore/**"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      security-events: write
+    with:
+      rust-versions: '["1.93"]'
+      integration-matrix: '[{"rust-version":"1.93","project-suffix":"1-93","qm1-rest-port":"19485","qm2-rest-port":"19486","qm1-mq-port":"11456","qm2-mq-port":"11457"}]'
+      run-security: "false"
+      run-release-gates: "false"
