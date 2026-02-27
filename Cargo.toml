@@ -8,6 +8,8 @@ license = "GPL-3.0-or-later"
 repository = "https://github.com/wphillipmoore/mq-rest-admin-rust"
 keywords = ["ibm-mq", "rest-api", "mqsc", "message-queue"]
 categories = ["api-bindings"]
+readme = "README.md"
+documentation = "https://wphillipmoore.github.io/mq-rest-admin-rust/"
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"], default-features = false }
