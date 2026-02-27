@@ -5,18 +5,32 @@ version = 2
 version = 2
 allow = [
     "Apache-2.0",
-    "MIT",
-    "BSD-2-Clause",
+    "Apache-2.0 WITH LLVM-exception",
     "BSD-3-Clause",
+    "CDLA-Permissive-2.0",
+    "GPL-3.0-or-later",
     "ISC",
-    "MPL-2.0",
-    "GPL-3.0",
+    "MIT",
     "Unicode-3.0",
-    "Unicode-DFS-2016",
 ]
 
 [bans]
 multiple-versions = "deny"
+
+# Transitive duplicates from reqwest's dependency chain (ring vs socket2/tokio
+# pull different windows-sys versions). Not actionable from this crate.
+skip = [
+    { crate = "windows-sys" },
+    { crate = "windows-targets" },
+    { crate = "windows_aarch64_gnullvm" },
+    { crate = "windows_aarch64_msvc" },
+    { crate = "windows_i686_gnu" },
+    { crate = "windows_i686_gnullvm" },
+    { crate = "windows_i686_msvc" },
+    { crate = "windows_x86_64_gnu" },
+    { crate = "windows_x86_64_gnullvm" },
+    { crate = "windows_x86_64_msvc" },
+]
 
 [sources]
 unknown-registry = "deny"
