@@ -1,25 +1,12 @@
 # Examples
 
-!!! note
-    The `examples/` directory is not yet available in the Rust implementation.
-    Example programs demonstrating common MQ administration tasks are planned
-    for a future release.
-
-## Planned examples
-
-The following examples from the Python reference implementation will be
-adapted for Rust:
-
-- **Health check** — Connect to queue managers and verify status
-- **Queue depth monitor** — List queues and flag those approaching capacity
-- **Channel status report** — Cross-reference definitions with live status
-- **Queue status and handles** — Demonstrate nested object flattening
-- **Dead letter queue inspector** — Inspect DLQ configuration and depth
-- **Environment provisioner** — Bulk provisioning across multiple queue managers
+The `examples/` directory contains standalone programs demonstrating common
+MQ administration tasks. Each example is a complete `fn main()` binary that
+can be run with `cargo run --example <name>`.
 
 ## Prerequisites
 
-When examples are available, they will use the same local Docker environment:
+Start the local MQ development environment before running examples:
 
 ```bash
 ./scripts/dev/mq_start.sh
@@ -29,44 +16,87 @@ When examples are available, they will use the same local Docker environment:
 This starts two queue managers (`QM1` on port 9443, `QM2` on port 9444) on a
 shared Docker network. See [local MQ container](development/local-mq-container.md) for details.
 
-## Basic usage pattern
+## Environment variables
 
-Until dedicated examples are available, here is the basic pattern for using
-the library:
+All examples read connection details from environment variables with sensible
+defaults:
 
-```rust
-use mq_rest_admin::{MqRestSession, Credentials, MqRestError};
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `MQ_REST_BASE_URL` | `https://localhost:9443/ibmmq/rest/v2` | QM1 REST endpoint |
+| `MQ_QMGR_NAME` | `QM1` | Queue manager name |
+| `MQ_ADMIN_USER` | `mqadmin` | Admin username |
+| `MQ_ADMIN_PASSWORD` | `mqadmin` | Admin password |
+| `MQ_REST_BASE_URL_QM2` | `https://localhost:9444/ibmmq/rest/v2` | QM2 REST endpoint (multi-QM examples) |
+| `DEPTH_THRESHOLD_PCT` | `80` | Warning threshold for queue depth monitor |
 
-fn main() -> Result<(), MqRestError> {
-    let session = MqRestSession::builder()
-        .rest_base_url("https://localhost:9443/ibmmq/rest/v2")
-        .qmgr_name("QM1")
-        .credentials(Credentials::Ltpa {
-            username: "mqadmin".into(),
-            password: "mqadmin".into(),
-        })
-        .verify_tls(false)
-        .build()?;
+## Running examples
 
-    // Health check
-    if let Some(qmgr) = session.display_qmgr(None, None)? {
-        println!("Queue manager: {:?}", qmgr.get("queue_manager_name"));
-    }
+```bash
+cargo run --example health_check
+cargo run --example queue_depth_monitor
+cargo run --example channel_status
+cargo run --example queue_status
+cargo run --example dlq_inspector
+cargo run --example provision_environment
+```
 
-    // List queues
-    let queues = session.display_queue(
-        Some("DEV.*"),
-        None,
-        Some(vec!["current_queue_depth".into(), "max_queue_depth".into()]),
-        None,
-    )?;
+## health_check
 
-    for queue in &queues {
-        println!("{}: depth {:?}",
-            queue.get("queue_name").unwrap(),
-            queue.get("current_queue_depth"));
-    }
+Connects to one or more queue managers and checks QMGR status, command server
+availability, and listener state. Produces a pass/fail summary for each queue
+manager.
 
-    Ok(())
-}
+Set `MQ_REST_BASE_URL_QM2` to also check QM2.
+
+```bash
+cargo run --example health_check
+```
+
+## queue_depth_monitor
+
+Displays local queues with their current depth, flags queues approaching
+capacity, and sorts by depth percentage descending. Configure the warning
+threshold with `DEPTH_THRESHOLD_PCT`.
+
+```bash
+cargo run --example queue_depth_monitor
+```
+
+## channel_status
+
+Displays channel definitions alongside live channel status. Identifies channels
+that are defined but not running and shows connection details.
+
+```bash
+cargo run --example channel_status
+```
+
+## queue_status
+
+Demonstrates `DISPLAY QSTATUS TYPE(HANDLE)` and `DISPLAY CONN TYPE(HANDLE)`
+queries, showing how `mq-rest-admin` transparently flattens the nested `objects`
+response structure into uniform flat `HashMap`s.
+
+```bash
+cargo run --example queue_status
+```
+
+## dlq_inspector
+
+Checks the dead letter queue configuration for a queue manager, reports its
+depth and capacity, and suggests actions when messages are present.
+
+```bash
+cargo run --example dlq_inspector
+```
+
+## provision_environment
+
+Defines a complete set of queues, channels, and remote queue definitions across
+two queue managers, then verifies connectivity. Includes teardown to remove all
+provisioned objects. Requires both QM1 and QM2 to be running.
+
+```bash
+cargo run --example provision_environment
 ```
