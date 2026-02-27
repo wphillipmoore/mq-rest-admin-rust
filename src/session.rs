@@ -62,6 +62,7 @@ pub struct MqRestSessionBuilder {
 
 impl MqRestSessionBuilder {
     /// Create a new builder with required parameters.
+    #[must_use]
     pub fn new(
         rest_base_url: impl Into<String>,
         qmgr_name: impl Into<String>,
@@ -84,60 +85,74 @@ impl MqRestSessionBuilder {
     }
 
     /// Set the gateway queue manager name.
+    #[must_use]
     pub fn gateway_qmgr(mut self, name: impl Into<String>) -> Self {
         self.gateway_qmgr = Some(name.into());
         self
     }
 
     /// Set whether to verify TLS certificates.
-    pub fn verify_tls(mut self, verify: bool) -> Self {
+    #[must_use]
+    pub const fn verify_tls(mut self, verify: bool) -> Self {
         self.verify_tls = verify;
         self
     }
 
     /// Set the HTTP request timeout in seconds.
-    pub fn timeout_seconds(mut self, timeout: Option<f64>) -> Self {
+    #[must_use]
+    pub const fn timeout_seconds(mut self, timeout: Option<f64>) -> Self {
         self.timeout_seconds = timeout;
         self
     }
 
-    /// Set whether to map attributes between snake_case and MQSC names.
-    pub fn map_attributes(mut self, enabled: bool) -> Self {
+    /// Set whether to map attributes between `snake_case` and MQSC names.
+    #[must_use]
+    pub const fn map_attributes(mut self, enabled: bool) -> Self {
         self.map_attributes = enabled;
         self
     }
 
     /// Set whether mapping failures are strict errors.
-    pub fn mapping_strict(mut self, strict: bool) -> Self {
+    #[must_use]
+    pub const fn mapping_strict(mut self, strict: bool) -> Self {
         self.mapping_strict = strict;
         self
     }
 
     /// Set mapping overrides.
+    #[must_use]
     pub fn mapping_overrides(mut self, overrides: Value) -> Self {
         self.mapping_overrides = Some(overrides);
         self
     }
 
     /// Set the mapping overrides mode.
-    pub fn mapping_overrides_mode(mut self, mode: MappingOverrideMode) -> Self {
+    #[must_use]
+    pub const fn mapping_overrides_mode(mut self, mode: MappingOverrideMode) -> Self {
         self.mapping_overrides_mode = mode;
         self
     }
 
     /// Set the CSRF token value.
+    #[must_use]
     pub fn csrf_token(mut self, token: Option<String>) -> Self {
         self.csrf_token = token;
         self
     }
 
     /// Set a custom transport implementation.
+    #[must_use]
     pub fn transport(mut self, transport: Box<dyn MqRestTransport>) -> Self {
         self.transport = Some(transport);
         self
     }
 
     /// Build the session, performing LTPA login if needed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if mapping override validation fails, certificate files
+    /// cannot be read, or LTPA login fails.
     pub fn build(self) -> Result<MqRestSession> {
         let rest_base_url = self.rest_base_url.trim_end_matches('/').to_owned();
 
@@ -257,6 +272,7 @@ pub struct MqRestSession {
 
 impl MqRestSession {
     /// Create a builder for constructing a session.
+    #[must_use]
     pub fn builder(
         rest_base_url: impl Into<String>,
         qmgr_name: impl Into<String>,
@@ -266,16 +282,23 @@ impl MqRestSession {
     }
 
     /// The queue manager name this session targets.
+    #[must_use]
     pub fn qmgr_name(&self) -> &str {
         &self.qmgr_name
     }
 
     /// The gateway queue manager name, or `None` for direct access.
+    #[must_use]
     pub fn gateway_qmgr(&self) -> Option<&str> {
         self.gateway_qmgr.as_deref()
     }
 
     /// Core MQSC command dispatch method.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if attribute mapping, HTTP transport, response parsing,
+    /// or the MQ command itself fails.
     pub(crate) fn mqsc_command(
         &mut self,
         command: &str,
@@ -512,28 +535,24 @@ fn normalize_response_parameters(
     response_parameters: Option<&[&str]>,
     is_display: bool,
 ) -> Vec<String> {
-    match response_parameters {
-        None => {
-            if is_display {
-                DEFAULT_RESPONSE_PARAMETERS
-                    .iter()
-                    .map(|s| (*s).to_owned())
-                    .collect()
-            } else {
-                Vec::new()
-            }
-        }
-        Some(params) => {
-            let normalized: Vec<String> = params.iter().map(|s| (*s).to_owned()).collect();
-            if is_all_response_parameters(&normalized) {
-                DEFAULT_RESPONSE_PARAMETERS
-                    .iter()
-                    .map(|s| (*s).to_owned())
-                    .collect()
-            } else {
-                normalized
-            }
-        }
+    let Some(params) = response_parameters else {
+        return if is_display {
+            DEFAULT_RESPONSE_PARAMETERS
+                .iter()
+                .map(|s| (*s).to_owned())
+                .collect()
+        } else {
+            Vec::new()
+        };
+    };
+    let normalized: Vec<String> = params.iter().map(|s| (*s).to_owned()).collect();
+    if is_all_response_parameters(&normalized) {
+        DEFAULT_RESPONSE_PARAMETERS
+            .iter()
+            .map(|s| (*s).to_owned())
+            .collect()
+    } else {
+        normalized
     }
 }
 
@@ -612,9 +631,10 @@ fn extract_command_response(
 }
 
 fn raise_for_command_errors(payload: &HashMap<String, Value>, status_code: u16) -> Result<()> {
-    let overall_cc = extract_optional_i64(payload.get("overallCompletionCode"));
-    let overall_rc = extract_optional_i64(payload.get("overallReasonCode"));
-    let has_overall_error = has_error_codes(overall_cc, overall_rc);
+    #[allow(clippy::similar_names)]
+    let completion_code = extract_optional_i64(payload.get("overallCompletionCode"));
+    let reason_code = extract_optional_i64(payload.get("overallReasonCode"));
+    let has_overall_error = has_error_codes(completion_code, reason_code);
 
     let mut command_issues: Vec<String> = Vec::new();
     if let Some(Value::Array(cr)) = payload.get("commandResponse") {
@@ -638,8 +658,8 @@ fn raise_for_command_errors(payload: &HashMap<String, Value>, status_code: u16) 
         if has_overall_error {
             lines.push(format!(
                 "overallCompletionCode={} overallReasonCode={}",
-                overall_cc.unwrap_or(0),
-                overall_rc.unwrap_or(0),
+                completion_code.unwrap_or(0),
+                reason_code.unwrap_or(0),
             ));
         }
         if !command_issues.is_empty() {
@@ -659,7 +679,7 @@ fn extract_optional_i64(value: Option<&Value>) -> Option<i64> {
     value.and_then(Value::as_i64)
 }
 
-fn has_error_codes(cc: Option<i64>, rc: Option<i64>) -> bool {
+const fn has_error_codes(cc: Option<i64>, rc: Option<i64>) -> bool {
     matches!(cc, Some(c) if c != 0) || matches!(rc, Some(r) if r != 0)
 }
 
@@ -756,21 +776,20 @@ fn map_where_keyword(
     };
 
     let combined_map = build_snake_to_mqsc_map(entry);
-    let mapped_keyword = match combined_map.get(keyword) {
-        Some(mk) => mk.clone(),
-        None => {
-            if strict {
-                return Err(MappingError::new(vec![MappingIssue {
-                    direction: "request".into(),
-                    reason: "unknown_key".into(),
-                    attribute_name: keyword.into(),
-                    attribute_value: None,
-                    object_index: None,
-                    qualifier: Some(mapping_qualifier.into()),
-                }]));
-            }
-            keyword.to_owned()
+    let mapped_keyword = if let Some(mk) = combined_map.get(keyword) {
+        mk.clone()
+    } else {
+        if strict {
+            return Err(MappingError::new(vec![MappingIssue {
+                direction: "request".into(),
+                reason: "unknown_key".into(),
+                attribute_name: keyword.into(),
+                attribute_value: None,
+                object_index: None,
+                qualifier: Some(mapping_qualifier.into()),
+            }]));
         }
+        keyword.to_owned()
     };
 
     if rest.is_empty() {
@@ -793,21 +812,18 @@ fn map_response_parameter_names(
             mapped.push(macro_key.clone());
             continue;
         }
-        match combined_map.get(name.as_str()) {
-            Some(mapped_key) => {
-                mapped.push(mapped_key.clone());
-            }
-            None => {
-                issues.push(MappingIssue {
-                    direction: "request".into(),
-                    reason: "unknown_key".into(),
-                    attribute_name: name.clone(),
-                    attribute_value: None,
-                    object_index: None,
-                    qualifier: Some(mapping_qualifier.into()),
-                });
-                mapped.push(name.clone());
-            }
+        if let Some(mapped_key) = combined_map.get(name.as_str()) {
+            mapped.push(mapped_key.clone());
+        } else {
+            issues.push(MappingIssue {
+                direction: "request".into(),
+                reason: "unknown_key".into(),
+                attribute_name: name.clone(),
+                attribute_value: None,
+                object_index: None,
+                qualifier: Some(mapping_qualifier.into()),
+            });
+            mapped.push(name.clone());
         }
     }
     (mapped, issues)

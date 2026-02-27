@@ -24,6 +24,7 @@ pub struct MappingIssue {
 
 impl MappingIssue {
     /// Return the issue as a JSON-serialisable map.
+    #[must_use]
     pub fn to_payload(&self) -> HashMap<String, Value> {
         let mut map = HashMap::new();
         map.insert("direction".into(), Value::String(self.direction.clone()));
@@ -39,15 +40,13 @@ impl MappingIssue {
         map.insert(
             "object_index".into(),
             self.object_index
-                .map(|i| Value::Number(i.into()))
-                .unwrap_or(Value::Null),
+                .map_or(Value::Null, |i| Value::Number(i.into())),
         );
         map.insert(
             "qualifier".into(),
             self.qualifier
                 .as_ref()
-                .map(|q| Value::String(q.clone()))
-                .unwrap_or(Value::Null),
+                .map_or(Value::Null, |q| Value::String(q.clone())),
         );
         map
     }
@@ -63,12 +62,14 @@ pub struct MappingError {
 
 impl MappingError {
     /// Create a new mapping error from the captured issues.
+    #[must_use]
     pub fn new(issues: Vec<MappingIssue>) -> Self {
         let message = build_mapping_message(&issues);
         Self { issues, message }
     }
 
     /// Return mapping issues as JSON-serialisable maps.
+    #[must_use]
     pub fn to_payload(&self) -> Vec<HashMap<String, Value>> {
         self.issues.iter().map(MappingIssue::to_payload).collect()
     }
@@ -90,14 +91,12 @@ fn build_mapping_message(issues: &[MappingIssue]) -> String {
     for issue in issues {
         let index_label = issue
             .object_index
-            .map(|i| i.to_string())
-            .unwrap_or_else(|| "-".into());
+            .map_or_else(|| "-".into(), |i| i.to_string());
         let qualifier_label = issue.qualifier.as_deref().unwrap_or("-");
         let value_label = issue
             .attribute_value
             .as_ref()
-            .map(|v| format!("{v}"))
-            .unwrap_or_else(|| "-".into());
+            .map_or_else(|| "-".into(), |v| format!("{v}"));
         lines.push(format!(
             "index={} | qualifier={} | direction={} | reason={} | attribute={} | value={}",
             index_label,

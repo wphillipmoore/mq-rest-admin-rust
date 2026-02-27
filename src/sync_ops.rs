@@ -88,6 +88,11 @@ impl MqRestSession {
     // ---- Channel ----
 
     /// Start a channel and wait until it is running.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the START command fails or the channel does not
+    /// reach RUNNING within the timeout.
     pub fn start_channel_sync(
         &mut self,
         name: &str,
@@ -97,6 +102,11 @@ impl MqRestSession {
     }
 
     /// Stop a channel and wait until it is stopped.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the STOP command fails or the channel does not
+    /// reach STOPPED within the timeout.
     pub fn stop_channel_sync(
         &mut self,
         name: &str,
@@ -106,6 +116,10 @@ impl MqRestSession {
     }
 
     /// Stop then start a channel, waiting for each phase.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either the stop or start phase fails or times out.
     pub fn restart_channel(
         &mut self,
         name: &str,
@@ -117,6 +131,11 @@ impl MqRestSession {
     // ---- Listener ----
 
     /// Start a listener and wait until it is running.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the START command fails or the listener does not
+    /// reach RUNNING within the timeout.
     pub fn start_listener_sync(
         &mut self,
         name: &str,
@@ -126,6 +145,11 @@ impl MqRestSession {
     }
 
     /// Stop a listener and wait until it is stopped.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the STOP command fails or the listener does not
+    /// reach STOPPED within the timeout.
     pub fn stop_listener_sync(
         &mut self,
         name: &str,
@@ -135,6 +159,10 @@ impl MqRestSession {
     }
 
     /// Stop then start a listener, waiting for each phase.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either the stop or start phase fails or times out.
     pub fn restart_listener(
         &mut self,
         name: &str,
@@ -146,6 +174,11 @@ impl MqRestSession {
     // ---- Service ----
 
     /// Start a service and wait until it is running.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the START command fails or the service does not
+    /// reach RUNNING within the timeout.
     pub fn start_service_sync(
         &mut self,
         name: &str,
@@ -155,6 +188,11 @@ impl MqRestSession {
     }
 
     /// Stop a service and wait until it is stopped.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the STOP command fails or the service does not
+    /// reach STOPPED within the timeout.
     pub fn stop_service_sync(
         &mut self,
         name: &str,
@@ -164,6 +202,10 @@ impl MqRestSession {
     }
 
     /// Stop then start a service, waiting for each phase.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either the stop or start phase fails or times out.
     pub fn restart_service(
         &mut self,
         name: &str,

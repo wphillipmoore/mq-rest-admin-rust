@@ -1,4 +1,5 @@
-//! MQSC command methods for MqRestSession.
+//! MQSC command methods for `MqRestSession`.
+#![allow(clippy::missing_errors_doc)]
 
 use std::collections::HashMap;
 
