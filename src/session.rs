@@ -574,8 +574,8 @@ fn flatten_nested_objects(
             for nested in objects {
                 if let Some(obj) = nested.as_object() {
                     let mut merged = shared.clone();
-                    for (k, v) in obj {
-                        merged.insert(k.clone(), v.clone());
+                    for (key, value) in obj {
+                        merged.insert(key.clone(), value.clone());
                     }
                     flattened.push(merged);
                 }
@@ -631,7 +631,6 @@ fn extract_command_response(
 }
 
 fn raise_for_command_errors(payload: &HashMap<String, Value>, status_code: u16) -> Result<()> {
-    #[allow(clippy::similar_names)]
     let completion_code = extract_optional_i64(payload.get("overallCompletionCode"));
     let reason_code = extract_optional_i64(payload.get("overallReasonCode"));
     let has_overall_error = has_error_codes(completion_code, reason_code);
@@ -640,13 +639,13 @@ fn raise_for_command_errors(payload: &HashMap<String, Value>, status_code: u16) 
     if let Some(Value::Array(cr)) = payload.get("commandResponse") {
         for (idx, item) in cr.iter().enumerate() {
             if let Some(obj) = item.as_object() {
-                let cc = extract_optional_i64(obj.get("completionCode"));
-                let rc = extract_optional_i64(obj.get("reasonCode"));
-                if has_error_codes(cc, rc) {
+                let completion_code = extract_optional_i64(obj.get("completionCode"));
+                let reason_code = extract_optional_i64(obj.get("reasonCode"));
+                if has_error_codes(completion_code, reason_code) {
                     command_issues.push(format!(
                         "index={idx} completionCode={} reasonCode={}",
-                        cc.unwrap_or(0),
-                        rc.unwrap_or(0),
+                        completion_code.unwrap_or(0),
+                        reason_code.unwrap_or(0),
                     ));
                 }
             }
@@ -679,8 +678,8 @@ fn extract_optional_i64(value: Option<&Value>) -> Option<i64> {
     value.and_then(Value::as_i64)
 }
 
-const fn has_error_codes(cc: Option<i64>, rc: Option<i64>) -> bool {
-    matches!(cc, Some(c) if c != 0) || matches!(rc, Some(r) if r != 0)
+const fn has_error_codes(completion_code: Option<i64>, reason_code: Option<i64>) -> bool {
+    matches!(completion_code, Some(c) if c != 0) || matches!(reason_code, Some(r) if r != 0)
 }
 
 fn get_command_map(mapping_data: &Value) -> HashMap<String, Value> {
@@ -729,11 +728,11 @@ fn build_unknown_qualifier_issue(qualifier: &str) -> Vec<MappingIssue> {
 
 fn build_snake_to_mqsc_map(qualifier_entry: &Value) -> HashMap<String, String> {
     let mut response_lookup: HashMap<String, String> = HashMap::new();
-    if let Some(rkm) = qualifier_entry
+    if let Some(response_key_map) = qualifier_entry
         .get("response_key_map")
         .and_then(Value::as_object)
     {
-        for (mqsc_key, snake_val) in rkm {
+        for (mqsc_key, snake_val) in response_key_map {
             if let Some(snake_key) = snake_val.as_str() {
                 response_lookup
                     .entry(snake_key.to_owned())
@@ -742,11 +741,11 @@ fn build_snake_to_mqsc_map(qualifier_entry: &Value) -> HashMap<String, String> {
         }
     }
     let mut combined = response_lookup;
-    if let Some(rkm) = qualifier_entry
+    if let Some(request_key_map) = qualifier_entry
         .get("request_key_map")
         .and_then(Value::as_object)
     {
-        for (snake_key, mqsc_val) in rkm {
+        for (snake_key, mqsc_val) in request_key_map {
             if let Some(mqsc_key) = mqsc_val.as_str() {
                 combined.insert(snake_key.clone(), mqsc_key.to_owned());
             }
@@ -776,8 +775,8 @@ fn map_where_keyword(
     };
 
     let combined_map = build_snake_to_mqsc_map(entry);
-    let mapped_keyword = if let Some(mk) = combined_map.get(keyword) {
-        mk.clone()
+    let mapped_keyword = if let Some(mqsc_key) = combined_map.get(keyword) {
+        mqsc_key.clone()
     } else {
         if strict {
             return Err(MappingError::new(vec![MappingIssue {

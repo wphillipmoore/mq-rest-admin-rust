@@ -117,8 +117,8 @@ fn merge_commands(merged: &mut Value, override_commands: Option<&Value>) {
     for (key, entry) in override_obj {
         if let Some(entry_obj) = entry.as_object() {
             if let Some(existing) = base_obj.get_mut(key).and_then(Value::as_object_mut) {
-                for (ek, ev) in entry_obj {
-                    existing.insert(ek.clone(), ev.clone());
+                for (entry_key, entry_value) in entry_obj {
+                    existing.insert(entry_key.clone(), entry_value.clone());
                 }
             } else {
                 base_obj.insert(key.clone(), entry.clone());
@@ -145,8 +145,8 @@ fn merge_qualifiers(merged: &mut Value, override_qualifiers: Option<&Value>) {
                         if let Some(existing_sub) =
                             existing.get_mut(sub_key).and_then(Value::as_object_mut)
                         {
-                            for (k, v) in sub_obj {
-                                existing_sub.insert(k.clone(), v.clone());
+                            for (key, value) in sub_obj {
+                                existing_sub.insert(key.clone(), value.clone());
                             }
                         } else {
                             existing.insert(sub_key.clone(), sub_value.clone());
