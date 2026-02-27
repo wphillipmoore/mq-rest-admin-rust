@@ -22,7 +22,7 @@ All examples read connection details from environment variables with sensible
 defaults:
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| -------- | ------- | ----------- |
 | `MQ_REST_BASE_URL` | `https://localhost:9443/ibmmq/rest/v2` | QM1 REST endpoint |
 | `MQ_QMGR_NAME` | `QM1` | Queue manager name |
 | `MQ_ADMIN_USER` | `mqadmin` | Admin username |
