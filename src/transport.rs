@@ -20,6 +20,10 @@ pub struct TransportResponse {
 /// Trait for MQ REST transport implementations.
 pub trait MqRestTransport {
     /// Send a JSON payload via HTTP POST and return the response.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the HTTP request fails.
     fn post_json(
         &self,
         url: &str,
@@ -37,6 +41,11 @@ pub struct ReqwestTransport {
 
 impl ReqwestTransport {
     /// Create a new transport with default settings.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the underlying reqwest client builder fails.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             client: reqwest::blocking::Client::builder()
@@ -47,6 +56,11 @@ impl ReqwestTransport {
     }
 
     /// Create a new transport that accepts invalid TLS certificates.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the underlying reqwest client builder fails.
+    #[must_use]
     pub fn new_insecure() -> Self {
         Self {
             client: reqwest::blocking::Client::builder()
@@ -57,16 +71,21 @@ impl ReqwestTransport {
     }
 
     /// Create a new transport with a client certificate for mTLS.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the PEM identity cannot be parsed or the client
+    /// builder fails.
     pub fn new_with_cert(cert_pem: &[u8], key_pem: Option<&[u8]>) -> crate::error::Result<Self> {
         let mut builder = reqwest::blocking::Client::builder();
-        let identity_pem = match key_pem {
-            Some(key) => {
+        let identity_pem = key_pem.map_or_else(
+            || cert_pem.to_vec(),
+            |key| {
                 let mut combined = cert_pem.to_vec();
                 combined.extend_from_slice(key);
                 combined
-            }
-            None => cert_pem.to_vec(),
-        };
+            },
+        );
         let identity =
             reqwest::Identity::from_pem(&identity_pem).map_err(|e| MqRestError::Transport {
                 url: String::new(),

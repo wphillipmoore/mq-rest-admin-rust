@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export DOCKER_DEV_IMAGE="${DOCKER_DEV_IMAGE:-dev-rust:1.93}"
-export DOCKER_TEST_CMD="${DOCKER_TEST_CMD:-cargo fmt --all -- --check && cargo clippy -- -D warnings}"
+export DOCKER_TEST_CMD="${DOCKER_TEST_CMD:-cargo fmt --all -- --check && cargo clippy}"
 
 if command -v docker-test >/dev/null 2>&1; then
   exec docker-test

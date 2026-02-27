@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export DOCKER_DEV_IMAGE="${DOCKER_DEV_IMAGE:-dev-rust:1.93}"
-export DOCKER_TEST_CMD="${DOCKER_TEST_CMD:-cargo test}"
+export DOCKER_TEST_CMD="${DOCKER_TEST_CMD:-cargo llvm-cov --fail-under-lines 0}"
 
 if command -v docker-test >/dev/null 2>&1; then
   exec docker-test

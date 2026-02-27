@@ -29,6 +29,10 @@ pub struct EnsureResult {
 
 impl MqRestSession {
     /// Ensure the queue manager has the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY or ALTER command fails.
     pub fn ensure_qmgr(
         &mut self,
         request_parameters: Option<&HashMap<String, Value>>,
@@ -69,6 +73,10 @@ impl MqRestSession {
     }
 
     /// Ensure a local queue exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_qlocal(
         &mut self,
         name: &str,
@@ -78,6 +86,10 @@ impl MqRestSession {
     }
 
     /// Ensure a remote queue exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_qremote(
         &mut self,
         name: &str,
@@ -87,6 +99,10 @@ impl MqRestSession {
     }
 
     /// Ensure an alias queue exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_qalias(
         &mut self,
         name: &str,
@@ -96,6 +112,10 @@ impl MqRestSession {
     }
 
     /// Ensure a model queue exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_qmodel(
         &mut self,
         name: &str,
@@ -105,6 +125,10 @@ impl MqRestSession {
     }
 
     /// Ensure a channel exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_channel(
         &mut self,
         name: &str,
@@ -114,6 +138,10 @@ impl MqRestSession {
     }
 
     /// Ensure an authentication information object exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_authinfo(
         &mut self,
         name: &str,
@@ -123,6 +151,10 @@ impl MqRestSession {
     }
 
     /// Ensure a listener exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_listener(
         &mut self,
         name: &str,
@@ -132,6 +164,10 @@ impl MqRestSession {
     }
 
     /// Ensure a namelist exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_namelist(
         &mut self,
         name: &str,
@@ -141,6 +177,10 @@ impl MqRestSession {
     }
 
     /// Ensure a process exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_process(
         &mut self,
         name: &str,
@@ -150,6 +190,10 @@ impl MqRestSession {
     }
 
     /// Ensure a service exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_service(
         &mut self,
         name: &str,
@@ -159,6 +203,10 @@ impl MqRestSession {
     }
 
     /// Ensure a topic exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_topic(
         &mut self,
         name: &str,
@@ -168,6 +216,10 @@ impl MqRestSession {
     }
 
     /// Ensure a subscription exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_sub(
         &mut self,
         name: &str,
@@ -177,6 +229,10 @@ impl MqRestSession {
     }
 
     /// Ensure a storage class exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_stgclass(
         &mut self,
         name: &str,
@@ -186,6 +242,10 @@ impl MqRestSession {
     }
 
     /// Ensure a communication information object exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_comminfo(
         &mut self,
         name: &str,
@@ -195,6 +255,10 @@ impl MqRestSession {
     }
 
     /// Ensure a CF structure exists with the specified attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the DISPLAY, DEFINE, or ALTER command fails.
     pub fn ensure_cfstruct(
         &mut self,
         name: &str,

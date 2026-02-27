@@ -23,6 +23,8 @@ const VALID_QUALIFIER_SUB_KEYS: &[&str] = &[
 
 /// Validate the structure of a mapping overrides value.
 ///
+/// # Errors
+///
 /// Returns `Err` with a descriptive message for type violations or invalid keys.
 pub fn validate_mapping_overrides(overrides: &Value) -> Result<(), String> {
     let obj = overrides
@@ -65,9 +67,9 @@ fn validate_qualifiers_section(qualifiers: Option<&Value>) -> Result<(), String>
         .as_object()
         .ok_or("mapping_overrides['qualifiers'] must be an object")?;
     for (key, entry) in obj {
-        let entry_obj = entry.as_object().ok_or(format!(
-            "mapping_overrides['qualifiers'][{key:?}] must be an object"
-        ))?;
+        let entry_obj = entry
+            .as_object()
+            .ok_or_else(|| format!("mapping_overrides['qualifiers'][{key:?}] must be an object"))?;
         validate_qualifier_entry(key, entry_obj)?;
     }
     Ok(())
@@ -94,6 +96,7 @@ fn validate_qualifier_entry(
 }
 
 /// Deep-copy `base` and merge `overrides` into it.
+#[must_use]
 pub fn merge_mapping_data(base: &Value, overrides: &Value) -> Value {
     let mut merged = base.clone();
     merge_commands(&mut merged, overrides.get("commands"));
@@ -158,6 +161,11 @@ fn merge_qualifiers(merged: &mut Value, override_qualifiers: Option<&Value>) {
 }
 
 /// Validate that `overrides` covers all command and qualifier keys in `base`.
+///
+/// # Errors
+///
+/// Returns `Err` listing any command or qualifier keys present in `base` but
+/// missing from `overrides`.
 pub fn validate_mapping_overrides_complete(base: &Value, overrides: &Value) -> Result<(), String> {
     let mut missing_parts = Vec::new();
 
@@ -172,7 +180,7 @@ pub fn validate_mapping_overrides_complete(base: &Value, overrides: &Value) -> R
             .filter(|k| !override_commands.contains_key(k.as_str()))
             .map(String::as_str)
             .collect();
-        missing.sort();
+        missing.sort_unstable();
         for key in missing {
             missing_parts.push(format!("commands: {key}"));
         }
@@ -189,7 +197,7 @@ pub fn validate_mapping_overrides_complete(base: &Value, overrides: &Value) -> R
             .filter(|k| !override_qualifiers.contains_key(k.as_str()))
             .map(String::as_str)
             .collect();
-        missing.sort();
+        missing.sort_unstable();
         for key in missing {
             missing_parts.push(format!("qualifiers: {key}"));
         }
@@ -206,6 +214,7 @@ pub fn validate_mapping_overrides_complete(base: &Value, overrides: &Value) -> R
 }
 
 /// Return a deep copy of `overrides` as the complete mapping data.
+#[must_use]
 pub fn replace_mapping_data(overrides: &Value) -> Value {
     overrides.clone()
 }
