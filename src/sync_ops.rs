@@ -358,3 +358,406 @@ fn has_status(
     }
     false
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_helpers::{
+        MockTransport, empty_success_response, mock_session, success_response,
+    };
+    use serde_json::json;
+
+    fn fast_config() -> SyncConfig {
+        SyncConfig {
+            timeout_seconds: 0.5,
+            poll_interval_seconds: 0.01,
+        }
+    }
+
+    fn status_response(key: &str, value: &str) -> crate::transport::TransportResponse {
+        let mut params = HashMap::new();
+        params.insert(key.into(), json!(value));
+        success_response(vec![params])
+    }
+
+    // ---- SyncConfig::default ----
+
+    #[test]
+    fn sync_config_default_values() {
+        let config = SyncConfig::default();
+        assert!((config.timeout_seconds - 30.0).abs() < f64::EPSILON);
+        assert!((config.poll_interval_seconds - 1.0).abs() < f64::EPSILON);
+    }
+
+    // ---- has_status ----
+
+    #[test]
+    fn has_status_match_first_key() {
+        let mut row = HashMap::new();
+        row.insert("channel_status".into(), json!("RUNNING"));
+        assert!(has_status(
+            &[row],
+            &["channel_status", "STATUS"],
+            &["RUNNING"]
+        ));
+    }
+
+    #[test]
+    fn has_status_match_second_key() {
+        let mut row = HashMap::new();
+        row.insert("STATUS".into(), json!("STOPPED"));
+        assert!(has_status(
+            &[row],
+            &["channel_status", "STATUS"],
+            &["STOPPED"]
+        ));
+    }
+
+    #[test]
+    fn has_status_no_match() {
+        let mut row = HashMap::new();
+        row.insert("STATUS".into(), json!("STARTING"));
+        assert!(!has_status(
+            &[row],
+            &["channel_status", "STATUS"],
+            &["RUNNING"]
+        ));
+    }
+
+    #[test]
+    fn has_status_empty_rows() {
+        assert!(!has_status(&[], &["STATUS"], &["RUNNING"]));
+    }
+
+    #[test]
+    fn has_status_non_string_value() {
+        let mut row = HashMap::new();
+        row.insert("STATUS".into(), json!(42));
+        assert!(!has_status(&[row], &["STATUS"], &["RUNNING"]));
+    }
+
+    // ---- start_channel_sync ----
+
+    #[test]
+    fn start_channel_sync_first_poll_running() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(),
+            status_response("channel_status", "RUNNING"),
+        ]);
+        let mut session = mock_session(transport);
+        let result = session
+            .start_channel_sync("MY.CH", Some(fast_config()))
+            .unwrap();
+        assert_eq!(result.operation, SyncOperation::Started);
+        assert!(result.polls >= 1);
+    }
+
+    #[test]
+    fn start_channel_sync_timeout() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+            status_response("channel_status", "STARTING"),
+        ]);
+        let mut session = mock_session(transport);
+        let result = session.start_channel_sync("MY.CH", Some(fast_config()));
+        assert!(matches!(result.unwrap_err(), MqRestError::Timeout { .. }));
+    }
+
+    // ---- stop_channel_sync ----
+
+    #[test]
+    fn stop_channel_sync_returns_stopped_via_status() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(),
+            status_response("STATUS", "STOPPED"),
+        ]);
+        let mut session = mock_session(transport);
+        let result = session
+            .stop_channel_sync("MY.CH", Some(fast_config()))
+            .unwrap();
+        assert_eq!(result.operation, SyncOperation::Stopped);
+    }
+
+    #[test]
+    fn stop_channel_sync_empty_means_stopped() {
+        let transport =
+            MockTransport::new(vec![empty_success_response(), empty_success_response()]);
+        let mut session = mock_session(transport);
+        let result = session
+            .stop_channel_sync("MY.CH", Some(fast_config()))
+            .unwrap();
+        assert_eq!(result.operation, SyncOperation::Stopped);
+    }
+
+    // ---- stop_listener_sync ----
+
+    #[test]
+    fn stop_listener_sync_empty_rows_not_stopped() {
+        // Listeners have empty_means_stopped=false, so empty rows mean timeout
+        let mut responses = vec![empty_success_response()]; // STOP command
+        for _ in 0..60 {
+            responses.push(empty_success_response()); // poll returns empty
+        }
+        let transport = MockTransport::new(responses);
+        let mut session = mock_session(transport);
+        let result = session.stop_listener_sync("MY.LIS", Some(fast_config()));
+        assert!(matches!(result.unwrap_err(), MqRestError::Timeout { .. }));
+    }
+
+    #[test]
+    fn stop_listener_sync_stopped_status() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(),
+            status_response("status", "STOPPED"),
+        ]);
+        let mut session = mock_session(transport);
+        let result = session
+            .stop_listener_sync("MY.LIS", Some(fast_config()))
+            .unwrap();
+        assert_eq!(result.operation, SyncOperation::Stopped);
+    }
+
+    // ---- restart_channel ----
+
+    #[test]
+    fn restart_channel_both_phases_succeed() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(),                     // STOP
+            empty_success_response(),                     // poll → empty (stopped for channel)
+            empty_success_response(),                     // START
+            status_response("channel_status", "RUNNING"), // poll → RUNNING
+        ]);
+        let mut session = mock_session(transport);
+        let result = session
+            .restart_channel("MY.CH", Some(fast_config()))
+            .unwrap();
+        assert_eq!(result.operation, SyncOperation::Restarted);
+        assert!(result.polls >= 2);
+    }
+
+    #[test]
+    fn restart_channel_stop_phase_fails() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.restart_channel("MY.CH", Some(fast_config()));
+        assert!(result.is_err());
+    }
+
+    // ---- Macro-generated per-method tests ----
+
+    macro_rules! test_start_sync {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![
+                        empty_success_response(),
+                        status_response("status", "RUNNING"),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", Some(fast_config())).unwrap();
+                    assert_eq!(result.operation, SyncOperation::Started);
+                }
+            }
+        };
+    }
+
+    macro_rules! test_stop_sync {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![
+                        empty_success_response(),
+                        status_response("status", "STOPPED"),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", Some(fast_config())).unwrap();
+                    assert_eq!(result.operation, SyncOperation::Stopped);
+                }
+            }
+        };
+    }
+
+    macro_rules! test_restart {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![
+                        empty_success_response(),
+                        status_response("status", "STOPPED"),
+                        empty_success_response(),
+                        status_response("status", "RUNNING"),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", Some(fast_config())).unwrap();
+                    assert_eq!(result.operation, SyncOperation::Restarted);
+                }
+            }
+        };
+    }
+
+    macro_rules! test_start_sync_channel {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![
+                        empty_success_response(),
+                        status_response("channel_status", "RUNNING"),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", Some(fast_config())).unwrap();
+                    assert_eq!(result.operation, SyncOperation::Started);
+                }
+            }
+        };
+    }
+
+    macro_rules! test_stop_sync_channel {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![
+                        empty_success_response(),
+                        status_response("channel_status", "STOPPED"),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", Some(fast_config())).unwrap();
+                    assert_eq!(result.operation, SyncOperation::Stopped);
+                }
+            }
+        };
+    }
+
+    macro_rules! test_restart_channel {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![
+                        empty_success_response(),
+                        status_response("channel_status", "STOPPED"),
+                        empty_success_response(),
+                        status_response("channel_status", "RUNNING"),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", Some(fast_config())).unwrap();
+                    assert_eq!(result.operation, SyncOperation::Restarted);
+                }
+            }
+        };
+    }
+
+    test_start_sync_channel!(start_channel_sync);
+    test_start_sync!(start_listener_sync);
+    test_start_sync!(start_service_sync);
+
+    test_stop_sync_channel!(stop_channel_sync);
+    test_stop_sync!(stop_listener_sync);
+    test_stop_sync!(stop_service_sync);
+
+    test_restart_channel!(restart_channel);
+    test_restart!(restart_listener);
+    test_restart!(restart_service);
+
+    #[test]
+    fn start_channel_sync_start_command_fails() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.start_channel_sync("MY.CH", Some(fast_config()));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn start_channel_sync_poll_fails() {
+        // START succeeds but poll DISPLAY fails
+        let transport = MockTransport::new(vec![
+            empty_success_response(), // START ok
+                                      // poll fails - no response
+        ]);
+        let mut session = mock_session(transport);
+        let result = session.start_channel_sync("MY.CH", Some(fast_config()));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn stop_channel_sync_stop_command_fails() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.stop_channel_sync("MY.CH", Some(fast_config()));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn stop_channel_sync_poll_fails() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(), // STOP ok
+                                      // poll fails - no response
+        ]);
+        let mut session = mock_session(transport);
+        let result = session.stop_channel_sync("MY.CH", Some(fast_config()));
+        assert!(result.is_err());
+    }
+}

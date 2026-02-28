@@ -19,3 +19,6 @@ pub use mapping_merge::MappingOverrideMode;
 pub use session::{MqRestSession, MqRestSessionBuilder};
 pub use sync_ops::{SyncConfig, SyncOperation, SyncResult};
 pub use transport::{MqRestTransport, ReqwestTransport, TransportResponse};
+
+#[cfg(test)]
+pub(crate) mod test_helpers;
