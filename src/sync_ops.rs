@@ -519,7 +519,7 @@ mod tests {
         ]);
         let mut session = mock_session(transport);
         let result = session.start_channel_sync("MY.CH", Some(fast_config()));
-        assert!(matches!(result.unwrap_err(), MqRestError::Timeout { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Timeout"));
     }
 
     // ---- stop_channel_sync ----
@@ -560,7 +560,7 @@ mod tests {
         let transport = MockTransport::new(responses);
         let mut session = mock_session(transport);
         let result = session.stop_listener_sync("MY.LIS", Some(fast_config()));
-        assert!(matches!(result.unwrap_err(), MqRestError::Timeout { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Timeout"));
     }
 
     #[test]
@@ -597,6 +597,18 @@ mod tests {
     #[test]
     fn restart_channel_stop_phase_fails() {
         let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.restart_channel("MY.CH", Some(fast_config()));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn restart_channel_start_phase_fails() {
+        let transport = MockTransport::new(vec![
+            empty_success_response(), // STOP
+            empty_success_response(), // poll → empty (stopped for channel)
+                                      // START fails - no response
+        ]);
         let mut session = mock_session(transport);
         let result = session.restart_channel("MY.CH", Some(fast_config()));
         assert!(result.is_err());

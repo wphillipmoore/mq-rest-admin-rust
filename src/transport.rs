@@ -262,8 +262,6 @@ mod tests {
             Some(1.0),
             true,
         );
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(matches!(err, MqRestError::Transport { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Transport"));
     }
 }

@@ -164,7 +164,7 @@ mod tests {
             headers: HashMap::new(),
         }]);
         let result = perform_ltpa_login(&transport, "https://h", "u", "p", None, None, false);
-        assert!(matches!(result.unwrap_err(), MqRestError::Auth { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Auth"));
     }
 
     #[test]
@@ -175,8 +175,7 @@ mod tests {
             headers: HashMap::new(),
         }]);
         let result = perform_ltpa_login(&transport, "https://h", "u", "p", None, None, false);
-        let err = result.unwrap_err();
-        assert!(matches!(err, MqRestError::Auth { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Auth"));
     }
 
     #[test]
@@ -220,7 +219,7 @@ mod tests {
             "SomeOtherCookie=value; Path=/",
         )]);
         let result = perform_ltpa_login(&transport, "https://h", "u", "p", None, None, false);
-        assert!(matches!(result.unwrap_err(), MqRestError::Auth { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Auth"));
     }
 
     #[test]

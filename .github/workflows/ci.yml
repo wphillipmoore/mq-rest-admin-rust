@@ -126,7 +126,7 @@ jobs:
         run: cargo clippy
 
       - name: Run tests with coverage
-        run: cargo llvm-cov --features examples --fail-under-lines 100
+        run: cargo llvm-cov --features examples --fail-under-lines 100 --fail-under-regions 100
 
   # ---------------------------------------------------------------------------
   # Integration tests — matrix over Rust versions with unique MQ ports

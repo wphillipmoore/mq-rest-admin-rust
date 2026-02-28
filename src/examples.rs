@@ -979,6 +979,34 @@ mod tests {
     }
 
     #[test]
+    fn channel_status_empty_names_filtered() {
+        let mut empty_def = HashMap::new();
+        empty_def.insert("channel_name".into(), json!(""));
+        empty_def.insert("channel_type".into(), json!("SDR"));
+        empty_def.insert("connection_name".into(), json!(""));
+
+        let mut empty_status = HashMap::new();
+        empty_status.insert("channel_name".into(), json!(""));
+        empty_status.insert("status".into(), json!("RUNNING"));
+
+        let transport = MockTransport::new(vec![
+            // display_channel: one valid, one empty-name
+            success_response(vec![
+                channel_def_response("CHL.A", "SDR", "host(1414)"),
+                empty_def,
+            ]),
+            // display_chstatus: one valid, one empty-name
+            success_response(vec![chstatus_response("CHL.A", "RUNNING"), empty_status]),
+        ]);
+        let mut session = mock_session(transport);
+
+        let results = report_channel_status(&mut session).expect("should succeed");
+        // Only CHL.A should appear — empty names are filtered
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].name, "CHL.A");
+    }
+
+    #[test]
     fn channel_status_no_live_status() {
         let transport = MockTransport::new(vec![
             // display_channel
@@ -1293,6 +1321,43 @@ mod tests {
 
         let failures = teardown(&mut qm1, &mut qm2).expect("teardown failed");
         assert_eq!(failures.len(), 16);
+    }
+
+    // Error propagation tests ------------------------------------------------
+
+    #[test]
+    fn monitor_queue_depths_transport_error() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = monitor_queue_depths(&mut session, 80.0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn report_channel_status_transport_error() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = report_channel_status(&mut session);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn inspect_dlq_transport_error() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = inspect_dlq(&mut session);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn inspect_dlq_display_queue_transport_error() {
+        let transport = MockTransport::new(vec![
+            success_response(vec![qmgr_with_dlq("DLQ")]),
+            // display_queue fails
+        ]);
+        let mut session = mock_session(transport);
+        let result = inspect_dlq(&mut session);
+        assert!(result.is_err());
     }
 
     // get_str / get_i64 helpers ---------------------------------------------
