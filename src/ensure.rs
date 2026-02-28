@@ -577,6 +577,31 @@ mod tests {
     }
 
     #[test]
+    fn ensure_qmgr_display_transport_error() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("new"));
+        let result = session.ensure_qmgr(Some(&params));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn ensure_qmgr_alter_transport_error() {
+        let mut current = HashMap::new();
+        current.insert("DESCR".into(), json!("old"));
+        let transport = MockTransport::new(vec![
+            success_response(vec![current]),
+            // No response for ALTER → transport error
+        ]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("new"));
+        let result = session.ensure_qmgr(Some(&params));
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn ensure_qlocal_define_fails() {
         // Object not found → DEFINE fails
         let transport = MockTransport::new(vec![

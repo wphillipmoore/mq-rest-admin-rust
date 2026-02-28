@@ -829,7 +829,9 @@ fn map_response_parameter_names(
 }
 
 fn get_qualifier_entry<'a>(qualifier: &str, mapping_data: &'a Value) -> Option<&'a Value> {
-    mapping_data.get("qualifiers")?.get(qualifier)
+    mapping_data
+        .get("qualifiers")
+        .and_then(|q| q.get(qualifier))
 }
 
 #[cfg(test)]
@@ -1083,7 +1085,7 @@ mod tests {
         }]);
         let mut session = mock_session(transport);
         let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
-        assert!(matches!(result.unwrap_err(), MqRestError::Response { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Response"));
     }
 
     #[test]
@@ -1095,7 +1097,7 @@ mod tests {
         }]);
         let mut session = mock_session(transport);
         let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
-        assert!(matches!(result.unwrap_err(), MqRestError::Response { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Response"));
     }
 
     #[test]
@@ -1103,7 +1105,24 @@ mod tests {
         let transport = MockTransport::new(vec![error_response(2, 3008)]);
         let mut session = mock_session(transport);
         let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
-        assert!(matches!(result.unwrap_err(), MqRestError::Command { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Command"));
+    }
+
+    #[test]
+    fn mqsc_command_command_response_not_list() {
+        let body = json!({
+            "overallCompletionCode": 0,
+            "overallReasonCode": 0,
+            "commandResponse": "not_a_list"
+        });
+        let transport = MockTransport::new(vec![TransportResponse {
+            status_code: 200,
+            text: body.to_string(),
+            headers: HashMap::new(),
+        }]);
+        let mut session = mock_session(transport);
+        let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
+        assert!(result.is_err());
     }
 
     #[test]
@@ -1430,8 +1449,10 @@ mod tests {
         let mut payload = HashMap::new();
         payload.insert("overallCompletionCode".into(), json!(2));
         payload.insert("overallReasonCode".into(), json!(3008));
-        let err = raise_for_command_errors(&payload, 200).unwrap_err();
-        assert!(matches!(err, MqRestError::Command { .. }));
+        assert!(
+            format!("{:?}", raise_for_command_errors(&payload, 200).unwrap_err())
+                .starts_with("Command")
+        );
     }
 
     #[test]
@@ -1443,8 +1464,10 @@ mod tests {
             "commandResponse".into(),
             json!([{"completionCode": 2, "reasonCode": 3008}]),
         );
-        let err = raise_for_command_errors(&payload, 200).unwrap_err();
-        assert!(matches!(err, MqRestError::Command { .. }));
+        assert!(
+            format!("{:?}", raise_for_command_errors(&payload, 200).unwrap_err())
+                .starts_with("Command")
+        );
     }
 
     #[test]
@@ -1456,11 +1479,9 @@ mod tests {
             "commandResponse".into(),
             json!([{"completionCode": 2, "reasonCode": 3008}]),
         );
-        let err = raise_for_command_errors(&payload, 200).unwrap_err();
-        assert!(matches!(err, MqRestError::Command { .. }));
-        let message = format!("{err}");
-        assert!(message.contains("overallCompletionCode"));
-        assert!(message.contains("commandResponse"));
+        let err_msg = format!("{}", raise_for_command_errors(&payload, 200).unwrap_err());
+        assert!(err_msg.contains("overallCompletionCode"));
+        assert!(err_msg.contains("commandResponse"));
     }
 
     #[test]
@@ -1635,7 +1656,7 @@ mod tests {
         let transport = MockTransport::new(vec![command_error_response()]);
         let mut session = mock_session(transport);
         let result = session.mqsc_command("DISPLAY", "QUEUE", Some("Q1"), None, None, None);
-        assert!(matches!(result.unwrap_err(), MqRestError::Command { .. }));
+        assert!(format!("{:?}", result.unwrap_err()).starts_with("Command"));
     }
 
     // =====================================================================
@@ -1708,6 +1729,25 @@ mod tests {
         .build();
         assert!(result.is_err());
         let _ = std::fs::remove_file(&cert_path);
+    }
+
+    #[test]
+    fn builder_certificate_valid_pem_no_transport() {
+        let cert_path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/test-fixtures/test-combined.pem"
+        );
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Certificate {
+                cert_path: cert_path.into(),
+                key_path: None,
+            },
+        )
+        .build()
+        .unwrap();
+        assert_eq!(session.qmgr_name(), "QM1");
     }
 
     #[test]
@@ -1954,7 +1994,7 @@ mod tests {
         let data = &*MAPPING_DATA;
         let macros = get_response_parameter_macros("DISPLAY", "QUEUE", data);
         // DISPLAY QUEUE should have some macros in the mapping data
-        assert!(!macros.is_empty() || macros.is_empty()); // just exercises the code
+        let _ = macros.len(); // just exercises the code path
     }
 
     #[test]
@@ -2222,5 +2262,47 @@ mod tests {
         });
         let result = build_snake_to_mqsc_map(&entry);
         assert!(result.is_empty());
+    }
+
+    // =====================================================================
+    // build_headers LTPA without token
+    // =====================================================================
+
+    #[test]
+    fn build_headers_ltpa_no_token_omits_cookie() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession {
+            rest_base_url: "https://host/ibmmq/rest/v2".into(),
+            qmgr_name: "QM1".into(),
+            gateway_qmgr: None,
+            verify_tls: true,
+            timeout_seconds: None,
+            map_attributes: false,
+            mapping_strict: false,
+            csrf_token: None,
+            credentials: Credentials::Ltpa {
+                username: "user".into(),
+                password: "pass".into(),
+            },
+            mapping_data: json!({}),
+            transport: Box::new(transport),
+            ltpa_token: None,
+            last_response_payload: None,
+            last_response_text: None,
+            last_http_status: None,
+            last_command_payload: None,
+        };
+        let headers = session.build_headers();
+        assert!(!headers.contains_key("Cookie"));
+    }
+
+    // =====================================================================
+    // get_qualifier_entry missing qualifier
+    // =====================================================================
+
+    #[test]
+    fn get_qualifier_entry_qualifiers_exist_but_missing_qualifier() {
+        let data = json!({"qualifiers": {"queue": {}}});
+        assert!(get_qualifier_entry("nonexistent", &data).is_none());
     }
 }

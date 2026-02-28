@@ -109,7 +109,7 @@ pub fn map_response_list(
 }
 
 fn get_qualifier_data<'a>(qualifier: &str, data: &'a Value) -> Option<&'a Value> {
-    data.get("qualifiers")?.get(qualifier)
+    data.get("qualifiers").and_then(|q| q.get(qualifier))
 }
 
 fn get_string_map(qualifier_data: &Value, map_name: &str) -> HashMap<String, String> {
@@ -696,6 +696,29 @@ mod tests {
         let data = json!({"kvm": {"key": {"inner": "not_object"}}});
         let result = get_key_value_map(&data, "kvm");
         assert!(result["key"].is_empty());
+    }
+
+    #[test]
+    fn get_nested_string_map_non_string_inner_value() {
+        let data = json!({"vm": {"key": {"valid": "mapped", "invalid": 42}}});
+        let result = get_nested_string_map(&data, "vm");
+        assert_eq!(result.len(), 1);
+        assert_eq!(result["key"].len(), 1);
+        assert_eq!(result["key"]["valid"], "mapped");
+    }
+
+    #[test]
+    fn get_key_value_map_non_string_nested_value() {
+        let data = json!({"kvm": {"key": {"inner": {"valid": "v", "invalid": 42}}}});
+        let result = get_key_value_map(&data, "kvm");
+        assert_eq!(result["key"]["inner"].len(), 1);
+        assert_eq!(result["key"]["inner"]["valid"], "v");
+    }
+
+    #[test]
+    fn get_qualifier_data_qualifiers_exist_but_qualifier_missing() {
+        let data = json!({"qualifiers": {"other": {}}});
+        assert!(get_qualifier_data("nonexist", &data).is_none());
     }
 
     // ---- Uses MAPPING_DATA (integration-level) ----

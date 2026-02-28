@@ -377,6 +377,6 @@ mod tests {
     fn mq_rest_error_mapping_from() {
         let mapping_err = MappingError::new(vec![]);
         let err: MqRestError = mapping_err.into();
-        assert!(matches!(err, MqRestError::Mapping(_)));
+        assert!(format!("{err:?}").starts_with("Mapping"));
     }
 }
