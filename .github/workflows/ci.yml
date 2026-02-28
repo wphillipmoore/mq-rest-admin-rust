@@ -126,7 +126,7 @@ jobs:
         run: cargo clippy
 
       - name: Run tests with coverage
-        run: cargo llvm-cov --fail-under-lines 100
+        run: cargo llvm-cov --features examples --fail-under-lines 100
 
   # ---------------------------------------------------------------------------
   # Integration tests — matrix over Rust versions with unique MQ ports
@@ -161,4 +161,4 @@ jobs:
         env:
           MQ_REST_BASE_URL: https://localhost:${{ matrix.qm1-rest-port }}/ibmmq/rest/v2
           MQ_REST_BASE_URL_QM2: https://localhost:${{ matrix.qm2-rest-port }}/ibmmq/rest/v2
-        run: cargo test --features integration
+        run: cargo test --features integration,examples

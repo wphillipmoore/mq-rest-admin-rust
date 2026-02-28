@@ -6,22 +6,12 @@
 //! `HashMap`s.
 //!
 //! ```text
-//! cargo run --example queue_status
+//! cargo run --features examples --example queue_status
 //! ```
 
-use std::collections::HashMap;
 use std::env;
 
-use mq_rest_admin::{Credentials, MqRestSession};
-use serde_json::Value;
-
-fn get_str(map: &HashMap<String, Value>, key: &str) -> String {
-    map.get(key)
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .trim()
-        .to_string()
-}
+use mq_rest_admin::{Credentials, MqRestSession, examples};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rest_base_url = env::var("MQ_REST_BASE_URL")
@@ -39,12 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .build()?;
 
     // Queue status with TYPE(HANDLE)
-    let mut qstatus_params: HashMap<String, Value> = HashMap::new();
-    qstatus_params.insert("type".into(), Value::String("HANDLE".into()));
-
-    let queue_handles = session
-        .display_qstatus(Some("*"), Some(&qstatus_params), None, None)
-        .unwrap_or_default();
+    let queue_handles = examples::report_queue_handles(&mut session)?;
 
     println!(
         "\n{:<30} {:<15} {:<30} Open Options",
@@ -58,24 +43,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for entry in &queue_handles {
             println!(
                 "{:<30} {:<15} {:<30} {}",
-                get_str(entry, "queue_name"),
-                get_str(entry, "handle_state"),
-                get_str(entry, "connection_id"),
-                get_str(entry, "open_options"),
+                entry.queue_name, entry.handle_state, entry.connection_id, entry.open_options,
             );
         }
     }
 
     // Connection handles with TYPE(HANDLE)
-    let mut conn_params: HashMap<String, Value> = HashMap::new();
-    conn_params.insert(
-        "connection_info_type".into(),
-        Value::String("HANDLE".into()),
-    );
-
-    let conn_handles = session
-        .display_conn(Some("*"), Some(&conn_params), None, None)
-        .unwrap_or_default();
+    let conn_handles = examples::report_connection_handles(&mut session)?;
 
     println!(
         "\n{:<30} {:<30} {:<15} Object Type",
@@ -89,10 +63,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for entry in &conn_handles {
             println!(
                 "{:<30} {:<30} {:<15} {}",
-                get_str(entry, "connection_id"),
-                get_str(entry, "object_name"),
-                get_str(entry, "handle_state"),
-                get_str(entry, "object_type"),
+                entry.connection_id, entry.object_name, entry.handle_state, entry.object_type,
             );
         }
     }

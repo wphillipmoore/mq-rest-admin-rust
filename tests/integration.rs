@@ -1026,3 +1026,122 @@ fn gateway_session_properties() {
     assert_eq!(session.qmgr_name(), config.qm2_qmgr_name);
     assert_eq!(session.gateway_qmgr(), Some(config.qmgr_name.as_str()));
 }
+
+// ---------------------------------------------------------------------------
+// Example function integration tests
+// ---------------------------------------------------------------------------
+
+#[cfg(feature = "examples")]
+mod example_tests {
+    use super::*;
+    use mq_rest_admin::examples;
+
+    fn build_qm2_session(config: &IntegrationConfig) -> MqRestSession {
+        MqRestSession::builder(
+            &config.qm2_rest_base_url,
+            &config.qm2_qmgr_name,
+            Credentials::Basic {
+                username: config.admin_user.clone(),
+                password: config.admin_password.clone(),
+            },
+        )
+        .verify_tls(false)
+        .build()
+        .expect("failed to build QM2 session")
+    }
+
+    #[test]
+    fn health_check_qm1() {
+        let config = load_config();
+        let mut session = build_session(&config);
+
+        let result = examples::check_health(&mut session).expect("check_health failed");
+        assert!(result.reachable);
+        assert!(result.passed);
+        assert_eq!(result.qmgr_name, config.qmgr_name);
+    }
+
+    #[test]
+    fn health_check_qm2() {
+        let config = load_config();
+        let mut session = build_qm2_session(&config);
+
+        let result = examples::check_health(&mut session).expect("check_health failed");
+        assert!(result.reachable);
+        assert!(result.passed);
+        assert_eq!(result.qmgr_name, config.qm2_qmgr_name);
+    }
+
+    #[test]
+    fn queue_depth_monitor() {
+        let config = load_config();
+        let mut session = build_session(&config);
+
+        let results = examples::monitor_queue_depths(&mut session, 80.0).expect("monitor failed");
+        assert!(!results.is_empty(), "should return at least one queue");
+        assert!(
+            results.iter().any(|q| q.name == "DEV.QLOCAL"),
+            "should contain DEV.QLOCAL"
+        );
+    }
+
+    #[test]
+    fn channel_status_report() {
+        let config = load_config();
+        let mut session = build_session(&config);
+
+        let results = examples::report_channel_status(&mut session).expect("channel status failed");
+        assert!(!results.is_empty(), "should return at least one channel");
+        assert!(
+            results.iter().any(|c| c.name == "DEV.SVRCONN"),
+            "should contain DEV.SVRCONN"
+        );
+    }
+
+    #[test]
+    fn dlq_inspector() {
+        let config = load_config();
+        let mut session = build_session(&config);
+
+        let report = examples::inspect_dlq(&mut session).expect("inspect_dlq failed");
+        assert!(report.configured);
+        assert_eq!(report.dlq_name, "DEV.DEAD.LETTER");
+        assert_eq!(report.current_depth, 0);
+    }
+
+    #[test]
+    fn queue_status_handles() {
+        let config = load_config();
+        let mut session = build_session(&config);
+
+        let _results = examples::report_queue_handles(&mut session).expect("queue handles failed");
+        // May be empty if no handles are open — just assert it succeeds
+    }
+
+    #[test]
+    fn connection_handles() {
+        let config = load_config();
+        let mut session = build_session(&config);
+
+        let _results =
+            examples::report_connection_handles(&mut session).expect("connection handles failed");
+        // May be empty — just assert it succeeds
+    }
+
+    #[test]
+    fn provision_and_teardown() {
+        let config = load_config();
+        let mut qm1 = build_session(&config);
+        let mut qm2 = build_qm2_session(&config);
+
+        let result = examples::provision(&mut qm1, &mut qm2).expect("provision failed");
+        assert!(
+            !result.objects_created.is_empty(),
+            "should create at least one object"
+        );
+        assert!(result.verified, "verification should pass");
+
+        let failures = examples::teardown(&mut qm1, &mut qm2).expect("teardown failed");
+        assert!(failures.is_empty(), "teardown should have no failures");
+    }
+}
