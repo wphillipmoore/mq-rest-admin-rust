@@ -1,5 +1,11 @@
 [advisories]
 version = 2
+ignore = [
+    # paste is a dev-dependency used only for test macro identifier
+    # concatenation. No security concern from an unmaintained proc-macro
+    # in test code.
+    "RUSTSEC-2024-0436",
+]
 
 [licenses]
 version = 2

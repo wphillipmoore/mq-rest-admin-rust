@@ -218,3 +218,288 @@ pub fn validate_mapping_overrides_complete(base: &Value, overrides: &Value) -> R
 pub fn replace_mapping_data(overrides: &Value) -> Value {
     overrides.clone()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    // ---- validate_mapping_overrides ----
+
+    #[test]
+    fn validate_valid_overrides() {
+        let v = json!({"commands": {}, "qualifiers": {}});
+        assert!(validate_mapping_overrides(&v).is_ok());
+    }
+
+    #[test]
+    fn validate_not_object() {
+        let v = json!("string");
+        assert!(validate_mapping_overrides(&v).is_err());
+    }
+
+    #[test]
+    fn validate_invalid_top_key() {
+        let v = json!({"bogus": {}});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("Invalid top-level key"));
+    }
+
+    #[test]
+    fn validate_commands_not_object() {
+        let v = json!({"commands": "bad"});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("commands"));
+    }
+
+    #[test]
+    fn validate_commands_entry_not_object() {
+        let v = json!({"commands": {"DISPLAY QUEUE": "bad"}});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("DISPLAY QUEUE"));
+    }
+
+    #[test]
+    fn validate_qualifiers_not_object() {
+        let v = json!({"qualifiers": "bad"});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("qualifiers"));
+    }
+
+    #[test]
+    fn validate_qualifier_entry_not_object() {
+        let v = json!({"qualifiers": {"queue": "bad"}});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("queue"));
+    }
+
+    #[test]
+    fn validate_qualifier_invalid_sub_key() {
+        let v = json!({"qualifiers": {"queue": {"bogus_key": {}}}});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("bogus_key"));
+    }
+
+    #[test]
+    fn validate_qualifier_sub_value_not_object() {
+        let v = json!({"qualifiers": {"queue": {"request_key_map": "bad"}}});
+        let err = validate_mapping_overrides(&v).unwrap_err();
+        assert!(err.contains("request_key_map"));
+    }
+
+    // ---- merge_mapping_data ----
+
+    #[test]
+    fn merge_new_command() {
+        let base = json!({"commands": {"A": {"q": "x"}}, "qualifiers": {}});
+        let overrides = json!({"commands": {"B": {"q": "y"}}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert!(merged["commands"]["A"].is_object());
+        assert!(merged["commands"]["B"].is_object());
+    }
+
+    #[test]
+    fn merge_existing_command() {
+        let base = json!({"commands": {"A": {"old": "1"}}, "qualifiers": {}});
+        let overrides = json!({"commands": {"A": {"new": "2"}}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert_eq!(merged["commands"]["A"]["old"], "1");
+        assert_eq!(merged["commands"]["A"]["new"], "2");
+    }
+
+    #[test]
+    fn merge_new_qualifier() {
+        let base = json!({"commands": {}, "qualifiers": {"q1": {"request_key_map": {"a": "A"}}}});
+        let overrides = json!({"qualifiers": {"q2": {"request_key_map": {"b": "B"}}}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert!(merged["qualifiers"]["q1"].is_object());
+        assert!(merged["qualifiers"]["q2"].is_object());
+    }
+
+    #[test]
+    fn merge_existing_qualifier_nested() {
+        let base = json!({"commands": {}, "qualifiers": {"q1": {"request_key_map": {"a": "A"}}}});
+        let overrides = json!({"qualifiers": {"q1": {"request_key_map": {"b": "B"}}}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert_eq!(merged["qualifiers"]["q1"]["request_key_map"]["a"], "A");
+        assert_eq!(merged["qualifiers"]["q1"]["request_key_map"]["b"], "B");
+    }
+
+    #[test]
+    fn merge_no_commands_override() {
+        let base = json!({"commands": {"A": {}}, "qualifiers": {}});
+        let overrides = json!({"qualifiers": {}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert!(merged["commands"]["A"].is_object());
+    }
+
+    #[test]
+    fn merge_no_qualifiers_override() {
+        let base = json!({"commands": {}, "qualifiers": {"q1": {}}});
+        let overrides = json!({"commands": {}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert!(merged["qualifiers"]["q1"].is_object());
+    }
+
+    // ---- validate_mapping_overrides_complete ----
+
+    #[test]
+    fn validate_complete_ok() {
+        let base = json!({"commands": {"A": {}}, "qualifiers": {"q1": {}}});
+        let overrides = json!({"commands": {"A": {}}, "qualifiers": {"q1": {}}});
+        assert!(validate_mapping_overrides_complete(&base, &overrides).is_ok());
+    }
+
+    #[test]
+    fn validate_complete_missing_commands() {
+        let base = json!({"commands": {"A": {}, "B": {}}, "qualifiers": {}});
+        let overrides = json!({"commands": {"A": {}}, "qualifiers": {}});
+        let err = validate_mapping_overrides_complete(&base, &overrides).unwrap_err();
+        assert!(err.contains("commands: B"));
+    }
+
+    #[test]
+    fn validate_complete_missing_qualifiers() {
+        let base = json!({"commands": {}, "qualifiers": {"q1": {}, "q2": {}}});
+        let overrides = json!({"commands": {}, "qualifiers": {"q1": {}}});
+        let err = validate_mapping_overrides_complete(&base, &overrides).unwrap_err();
+        assert!(err.contains("qualifiers: q2"));
+    }
+
+    #[test]
+    fn validate_complete_missing_both() {
+        let base = json!({"commands": {"A": {}}, "qualifiers": {"q1": {}}});
+        let overrides = json!({"commands": {}, "qualifiers": {}});
+        let err = validate_mapping_overrides_complete(&base, &overrides).unwrap_err();
+        assert!(err.contains("commands: A"));
+        assert!(err.contains("qualifiers: q1"));
+    }
+
+    #[test]
+    fn validate_qualifier_with_valid_sub_keys() {
+        let v = json!({
+            "qualifiers": {
+                "queue": {
+                    "request_key_map": {"a": "A"},
+                    "response_key_map": {"B": "b"}
+                }
+            }
+        });
+        assert!(validate_mapping_overrides(&v).is_ok());
+    }
+
+    #[test]
+    fn validate_commands_with_valid_entries() {
+        let v = json!({
+            "commands": {
+                "DISPLAY QUEUE": {"qualifier": "queue"},
+                "ALTER QMGR": {"qualifier": "qmgr"}
+            }
+        });
+        assert!(validate_mapping_overrides(&v).is_ok());
+    }
+
+    #[test]
+    fn validate_only_commands_key() {
+        let v = json!({"commands": {}});
+        assert!(validate_mapping_overrides(&v).is_ok());
+    }
+
+    #[test]
+    fn validate_only_qualifiers_key() {
+        let v = json!({"qualifiers": {}});
+        assert!(validate_mapping_overrides(&v).is_ok());
+    }
+
+    #[test]
+    fn validate_empty_object() {
+        let v = json!({});
+        assert!(validate_mapping_overrides(&v).is_ok());
+    }
+
+    #[test]
+    fn merge_qualifier_new_sub_key() {
+        let base = json!({
+            "commands": {},
+            "qualifiers": {
+                "q1": {
+                    "request_key_map": {"a": "A"}
+                }
+            }
+        });
+        let overrides = json!({
+            "qualifiers": {
+                "q1": {
+                    "response_key_map": {"B": "b"}
+                }
+            }
+        });
+        let merged = merge_mapping_data(&base, &overrides);
+        assert_eq!(merged["qualifiers"]["q1"]["request_key_map"]["a"], "A");
+        assert_eq!(merged["qualifiers"]["q1"]["response_key_map"]["B"], "b");
+    }
+
+    #[test]
+    fn merge_qualifier_non_object_sub_value_ignored() {
+        let base = json!({"commands": {}, "qualifiers": {"q1": {"request_key_map": {"a": "A"}}}});
+        let overrides = json!({"qualifiers": {"q1": {"request_key_map": "not_object"}}});
+        let merged = merge_mapping_data(&base, &overrides);
+        // Non-object sub-value should be ignored, original preserved
+        assert_eq!(merged["qualifiers"]["q1"]["request_key_map"]["a"], "A");
+    }
+
+    #[test]
+    fn merge_command_non_object_entry_ignored() {
+        let base = json!({"commands": {"A": {"old": "1"}}, "qualifiers": {}});
+        let overrides = json!({"commands": {"A": "not_object"}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert_eq!(merged["commands"]["A"]["old"], "1");
+    }
+
+    #[test]
+    fn merge_qualifier_non_object_entry_ignored() {
+        let base = json!({"commands": {}, "qualifiers": {"q1": {"request_key_map": {"a": "A"}}}});
+        let overrides = json!({"qualifiers": {"q1": "not_object"}});
+        let merged = merge_mapping_data(&base, &overrides);
+        assert_eq!(merged["qualifiers"]["q1"]["request_key_map"]["a"], "A");
+    }
+
+    #[test]
+    fn validate_complete_no_commands_in_base() {
+        let base = json!({"qualifiers": {"q1": {}}});
+        let overrides = json!({"qualifiers": {"q1": {}}});
+        assert!(validate_mapping_overrides_complete(&base, &overrides).is_ok());
+    }
+
+    #[test]
+    fn validate_complete_no_qualifiers_in_base() {
+        let base = json!({"commands": {"A": {}}});
+        let overrides = json!({"commands": {"A": {}}});
+        assert!(validate_mapping_overrides_complete(&base, &overrides).is_ok());
+    }
+
+    // ---- replace_mapping_data ----
+
+    #[test]
+    fn replace_returns_clone() {
+        let overrides = json!({"commands": {"X": {}}, "qualifiers": {}});
+        let result = replace_mapping_data(&overrides);
+        assert_eq!(result, overrides);
+    }
+
+    #[test]
+    fn merge_into_base_missing_commands_key() {
+        let base = json!({"qualifiers": {}});
+        let overrides = json!({"commands": {"NEW_CMD": {"key": "value"}}});
+        let result = merge_mapping_data(&base, &overrides);
+        assert!(result.get("commands").unwrap().get("NEW_CMD").is_some());
+    }
+
+    #[test]
+    fn merge_into_base_missing_qualifiers_key() {
+        let base = json!({"commands": {}});
+        let overrides = json!({"qualifiers": {"NEW_QUAL": {"sub": {"k": "v"}}}});
+        let result = merge_mapping_data(&base, &overrides);
+        assert!(result.get("qualifiers").unwrap().get("NEW_QUAL").is_some());
+    }
+}

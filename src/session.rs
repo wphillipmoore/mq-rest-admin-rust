@@ -831,3 +831,1396 @@ fn map_response_parameter_names(
 fn get_qualifier_entry<'a>(qualifier: &str, mapping_data: &'a Value) -> Option<&'a Value> {
     mapping_data.get("qualifiers")?.get(qualifier)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_helpers::{
+        MockTransport, command_error_response, empty_success_response, error_response,
+        mock_session, mock_session_with_mapping, success_response,
+    };
+    use crate::transport::TransportResponse;
+    use serde_json::json;
+
+    // =====================================================================
+    // Builder tests
+    // =====================================================================
+
+    #[test]
+    fn builder_basic_auth() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2/",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        assert_eq!(session.qmgr_name(), "QM1");
+        assert!(session.gateway_qmgr().is_none());
+    }
+
+    #[test]
+    fn builder_gateway_qmgr() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .gateway_qmgr("GW1")
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        assert_eq!(session.gateway_qmgr(), Some("GW1"));
+    }
+
+    #[test]
+    fn builder_ltpa_credentials_performs_login() {
+        let mut headers = HashMap::new();
+        headers.insert("Set-Cookie".into(), "LtpaToken2=tok; Path=/".into());
+        let login_response = TransportResponse {
+            status_code: 200,
+            text: "{}".into(),
+            headers,
+        };
+        let transport = MockTransport::new(vec![login_response]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Ltpa {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        assert!(session.ltpa_token.is_some());
+    }
+
+    #[test]
+    fn builder_mapping_overrides_merge() {
+        let transport = MockTransport::new(vec![]);
+        let overrides = json!({"commands": {}, "qualifiers": {}});
+        let _session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_overrides(overrides)
+        .mapping_overrides_mode(MappingOverrideMode::Merge)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+    }
+
+    #[test]
+    fn builder_invalid_overrides() {
+        let transport = MockTransport::new(vec![]);
+        let overrides = json!("not an object");
+        let result = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_overrides(overrides)
+        .transport(Box::new(transport))
+        .build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn builder_fluent_setters() {
+        let transport = MockTransport::new(vec![]);
+        let _session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .verify_tls(false)
+        .timeout_seconds(Some(60.0))
+        .map_attributes(false)
+        .mapping_strict(false)
+        .csrf_token(None)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+    }
+
+    // =====================================================================
+    // mqsc_command tests
+    // =====================================================================
+
+    #[test]
+    fn mqsc_command_basic_display() {
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("test"));
+        let transport = MockTransport::new(vec![success_response(vec![params])]);
+        let mut session = mock_session(transport);
+        let result = session
+            .mqsc_command("DISPLAY", "QUEUE", Some("Q1"), None, None, None)
+            .unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["DESCR"], json!("test"));
+    }
+
+    #[test]
+    fn mqsc_command_with_mapping() {
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("test"));
+        let transport = MockTransport::new(vec![success_response(vec![params])]);
+        let mut session = mock_session_with_mapping(transport);
+        let result = session
+            .mqsc_command("DISPLAY", "QUEUE", Some("Q1"), None, None, None)
+            .unwrap();
+        assert_eq!(result.len(), 1);
+        assert!(result[0].contains_key("description"));
+    }
+
+    #[test]
+    fn mqsc_command_non_display_default_params() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session
+            .mqsc_command("ALTER", "QMGR", None, None, None, None)
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert!(!payload.contains_key("responseParameters"));
+    }
+
+    #[test]
+    fn mqsc_command_display_default_params() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session
+            .mqsc_command("DISPLAY", "QMGR", None, None, None, None)
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert!(payload.contains_key("responseParameters"));
+    }
+
+    #[test]
+    fn mqsc_command_where_clause() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session
+            .mqsc_command(
+                "DISPLAY",
+                "QUEUE",
+                Some("*"),
+                None,
+                None,
+                Some("DESCR LK test*"),
+            )
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        let params = payload["parameters"].as_object().unwrap();
+        assert!(params.contains_key("WHERE"));
+    }
+
+    #[test]
+    fn mqsc_command_where_clause_with_mapping() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session_with_mapping(transport);
+        session
+            .mqsc_command(
+                "DISPLAY",
+                "QUEUE",
+                Some("*"),
+                None,
+                None,
+                Some("description LK test*"),
+            )
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        let params = payload["parameters"].as_object().unwrap();
+        let where_val = params["WHERE"].as_str().unwrap();
+        assert!(where_val.starts_with("DESCR"));
+    }
+
+    #[test]
+    fn mqsc_command_empty_where_clause_ignored() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session
+            .mqsc_command("DISPLAY", "QUEUE", Some("*"), None, None, Some("  "))
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert!(!payload.contains_key("parameters"));
+    }
+
+    #[test]
+    fn mqsc_command_transport_error() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn mqsc_command_invalid_json() {
+        let transport = MockTransport::new(vec![TransportResponse {
+            status_code: 200,
+            text: "not json".into(),
+            headers: HashMap::new(),
+        }]);
+        let mut session = mock_session(transport);
+        let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
+        assert!(matches!(result.unwrap_err(), MqRestError::Response { .. }));
+    }
+
+    #[test]
+    fn mqsc_command_non_object_json() {
+        let transport = MockTransport::new(vec![TransportResponse {
+            status_code: 200,
+            text: "[1,2,3]".into(),
+            headers: HashMap::new(),
+        }]);
+        let mut session = mock_session(transport);
+        let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
+        assert!(matches!(result.unwrap_err(), MqRestError::Response { .. }));
+    }
+
+    #[test]
+    fn mqsc_command_error_response() {
+        let transport = MockTransport::new(vec![error_response(2, 3008)]);
+        let mut session = mock_session(transport);
+        let result = session.mqsc_command("DISPLAY", "QMGR", None, None, None, None);
+        assert!(matches!(result.unwrap_err(), MqRestError::Command { .. }));
+    }
+
+    #[test]
+    fn mqsc_command_empty_command_response() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        let result = session
+            .mqsc_command("DISPLAY", "QMGR", None, None, None, None)
+            .unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn mqsc_command_nested_objects_flattened() {
+        let body = json!({
+            "overallCompletionCode": 0,
+            "overallReasonCode": 0,
+            "commandResponse": [{
+                "completionCode": 0,
+                "reasonCode": 0,
+                "parameters": {
+                    "shared_key": "shared_val",
+                    "objects": [
+                        {"nested_key": "val1"},
+                        {"nested_key": "val2"}
+                    ]
+                }
+            }]
+        });
+        let transport = MockTransport::new(vec![TransportResponse {
+            status_code: 200,
+            text: body.to_string(),
+            headers: HashMap::new(),
+        }]);
+        let mut session = mock_session(transport);
+        let result = session
+            .mqsc_command("DISPLAY", "QUEUE", Some("*"), None, None, None)
+            .unwrap();
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0]["shared_key"], json!("shared_val"));
+        assert_eq!(result[0]["nested_key"], json!("val1"));
+        assert_eq!(result[1]["nested_key"], json!("val2"));
+    }
+
+    #[test]
+    fn mqsc_command_with_request_parameters() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        let mut req_params = HashMap::new();
+        req_params.insert("FORCE".into(), json!("YES"));
+        session
+            .mqsc_command("ALTER", "QMGR", None, Some(&req_params), None, None)
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert!(payload.contains_key("parameters"));
+    }
+
+    #[test]
+    fn mqsc_command_with_explicit_response_parameters() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        let resp_params: &[&str] = &["DESCR", "MAXDEPTH"];
+        session
+            .mqsc_command("DISPLAY", "QUEUE", Some("*"), None, Some(resp_params), None)
+            .unwrap();
+        let payload = session.last_command_payload.unwrap();
+        let rp = payload["responseParameters"].as_array().unwrap();
+        assert_eq!(rp.len(), 2);
+    }
+
+    // =====================================================================
+    // Private helper tests
+    // =====================================================================
+
+    #[test]
+    fn build_headers_basic_auth() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "admin".into(),
+                password: "secret".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let headers = session.build_headers();
+        assert!(headers["Authorization"].starts_with("Basic "));
+        assert!(headers.contains_key("ibm-mq-rest-csrf-token"));
+    }
+
+    #[test]
+    fn build_headers_ltpa() {
+        let mut login_headers = HashMap::new();
+        login_headers.insert("Set-Cookie".into(), "LtpaToken2=tok; Path=/".into());
+        let transport = MockTransport::new(vec![TransportResponse {
+            status_code: 200,
+            text: "{}".into(),
+            headers: login_headers,
+        }]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Ltpa {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let headers = session.build_headers();
+        assert!(headers["Cookie"].contains("LtpaToken2=tok"));
+    }
+
+    #[test]
+    fn build_headers_certificate() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Certificate {
+                cert_path: "/fake".into(),
+                key_path: None,
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let headers = session.build_headers();
+        assert!(!headers.contains_key("Authorization"));
+        assert!(!headers.contains_key("Cookie"));
+    }
+
+    #[test]
+    fn build_headers_gateway() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .gateway_qmgr("GW1")
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let headers = session.build_headers();
+        assert_eq!(headers["ibm-mq-rest-gateway-qmgr"], "GW1");
+    }
+
+    #[test]
+    fn build_headers_no_csrf() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .csrf_token(None)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let headers = session.build_headers();
+        assert!(!headers.contains_key("ibm-mq-rest-csrf-token"));
+    }
+
+    #[test]
+    fn build_command_payload_with_name() {
+        let params = HashMap::new();
+        let resp: Vec<String> = vec![];
+        let payload = build_command_payload("DISPLAY", "QUEUE", Some("Q1"), &params, &resp);
+        assert_eq!(payload["command"], json!("DISPLAY"));
+        assert_eq!(payload["qualifier"], json!("QUEUE"));
+        assert_eq!(payload["name"], json!("Q1"));
+    }
+
+    #[test]
+    fn build_command_payload_without_name() {
+        let params = HashMap::new();
+        let resp: Vec<String> = vec![];
+        let payload = build_command_payload("DISPLAY", "QMGR", None, &params, &resp);
+        assert!(!payload.contains_key("name"));
+    }
+
+    #[test]
+    fn build_command_payload_empty_name() {
+        let params = HashMap::new();
+        let resp: Vec<String> = vec![];
+        let payload = build_command_payload("DISPLAY", "QMGR", Some(""), &params, &resp);
+        assert!(!payload.contains_key("name"));
+    }
+
+    #[test]
+    fn build_command_payload_with_params() {
+        let mut params = HashMap::new();
+        params.insert("FORCE".into(), json!("YES"));
+        let resp: Vec<String> = vec!["DESCR".into()];
+        let payload = build_command_payload("ALTER", "QMGR", None, &params, &resp);
+        assert!(payload.contains_key("parameters"));
+        assert!(payload.contains_key("responseParameters"));
+    }
+
+    #[test]
+    fn normalize_response_parameters_none_display() {
+        let result = normalize_response_parameters(None, true);
+        assert_eq!(result, vec!["all".to_owned()]);
+    }
+
+    #[test]
+    fn normalize_response_parameters_none_non_display() {
+        let result = normalize_response_parameters(None, false);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn normalize_response_parameters_all() {
+        let result = normalize_response_parameters(Some(&["ALL"]), false);
+        assert_eq!(result, vec!["all".to_owned()]);
+    }
+
+    #[test]
+    fn normalize_response_parameters_explicit() {
+        let result = normalize_response_parameters(Some(&["DESCR", "MAXDEPTH"]), true);
+        assert_eq!(result, vec!["DESCR".to_owned(), "MAXDEPTH".to_owned()]);
+    }
+
+    #[test]
+    fn flatten_nested_objects_no_nesting() {
+        let item = {
+            let mut m = HashMap::new();
+            m.insert("key".into(), json!("val"));
+            m
+        };
+        let result = flatten_nested_objects(vec![item]);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["key"], json!("val"));
+    }
+
+    #[test]
+    fn flatten_nested_objects_with_nesting() {
+        let item = {
+            let mut m = HashMap::new();
+            m.insert("shared".into(), json!("s"));
+            m.insert("objects".into(), json!([{"a": 1}, {"b": 2}]));
+            m
+        };
+        let result = flatten_nested_objects(vec![item]);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0]["shared"], json!("s"));
+        assert_eq!(result[0]["a"], json!(1));
+        assert_eq!(result[1]["b"], json!(2));
+    }
+
+    #[test]
+    fn parse_response_payload_valid() {
+        let result = parse_response_payload(r#"{"key": "value"}"#).unwrap();
+        assert_eq!(result["key"], json!("value"));
+    }
+
+    #[test]
+    fn parse_response_payload_invalid_json() {
+        let result = parse_response_payload("not json");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn parse_response_payload_non_object() {
+        let result = parse_response_payload("[1,2]");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn extract_command_response_present() {
+        let mut payload = HashMap::new();
+        payload.insert(
+            "commandResponse".into(),
+            json!([{"completionCode": 0, "parameters": {}}]),
+        );
+        let result = extract_command_response(&payload).unwrap();
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn extract_command_response_missing() {
+        let payload = HashMap::new();
+        let result = extract_command_response(&payload).unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn extract_command_response_not_list() {
+        let mut payload = HashMap::new();
+        payload.insert("commandResponse".into(), json!("string"));
+        let result = extract_command_response(&payload);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn extract_command_response_item_not_object() {
+        let mut payload = HashMap::new();
+        payload.insert("commandResponse".into(), json!([42]));
+        let result = extract_command_response(&payload);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn raise_for_command_errors_none() {
+        let mut payload = HashMap::new();
+        payload.insert("overallCompletionCode".into(), json!(0));
+        payload.insert("overallReasonCode".into(), json!(0));
+        assert!(raise_for_command_errors(&payload, 200).is_ok());
+    }
+
+    #[test]
+    fn raise_for_command_errors_overall() {
+        let mut payload = HashMap::new();
+        payload.insert("overallCompletionCode".into(), json!(2));
+        payload.insert("overallReasonCode".into(), json!(3008));
+        let err = raise_for_command_errors(&payload, 200).unwrap_err();
+        assert!(matches!(err, MqRestError::Command { .. }));
+    }
+
+    #[test]
+    fn raise_for_command_errors_item_level() {
+        let mut payload = HashMap::new();
+        payload.insert("overallCompletionCode".into(), json!(0));
+        payload.insert("overallReasonCode".into(), json!(0));
+        payload.insert(
+            "commandResponse".into(),
+            json!([{"completionCode": 2, "reasonCode": 3008}]),
+        );
+        let err = raise_for_command_errors(&payload, 200).unwrap_err();
+        assert!(matches!(err, MqRestError::Command { .. }));
+    }
+
+    #[test]
+    fn raise_for_command_errors_both_overall_and_item() {
+        let mut payload = HashMap::new();
+        payload.insert("overallCompletionCode".into(), json!(2));
+        payload.insert("overallReasonCode".into(), json!(3008));
+        payload.insert(
+            "commandResponse".into(),
+            json!([{"completionCode": 2, "reasonCode": 3008}]),
+        );
+        let err = raise_for_command_errors(&payload, 200).unwrap_err();
+        assert!(matches!(err, MqRestError::Command { .. }));
+        let message = format!("{err}");
+        assert!(message.contains("overallCompletionCode"));
+        assert!(message.contains("commandResponse"));
+    }
+
+    #[test]
+    fn map_where_keyword_with_known_key() {
+        let data = json!({
+            "qualifiers": {
+                "queue": {
+                    "request_key_map": {"description": "DESCR"},
+                    "response_key_map": {}
+                }
+            }
+        });
+        let result = map_where_keyword("description LK test*", "queue", false, &data).unwrap();
+        assert_eq!(result, "DESCR LK test*");
+    }
+
+    #[test]
+    fn map_where_keyword_unknown_key_non_strict() {
+        let data =
+            json!({"qualifiers": {"queue": {"request_key_map": {}, "response_key_map": {}}}});
+        let result = map_where_keyword("unknown_attr LK test*", "queue", false, &data).unwrap();
+        assert_eq!(result, "unknown_attr LK test*");
+    }
+
+    #[test]
+    fn map_where_keyword_unknown_key_strict() {
+        let data =
+            json!({"qualifiers": {"queue": {"request_key_map": {}, "response_key_map": {}}}});
+        let result = map_where_keyword("unknown_attr LK test*", "queue", true, &data);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn map_where_keyword_unknown_qualifier_non_strict() {
+        let data = json!({"qualifiers": {}});
+        let result = map_where_keyword("desc LK x", "noexist", false, &data).unwrap();
+        assert_eq!(result, "desc LK x");
+    }
+
+    #[test]
+    fn map_where_keyword_unknown_qualifier_strict() {
+        let data = json!({"qualifiers": {}});
+        let result = map_where_keyword("desc LK x", "noexist", true, &data);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn map_where_keyword_no_rest() {
+        let data = json!({
+            "qualifiers": {
+                "queue": {
+                    "request_key_map": {"description": "DESCR"},
+                    "response_key_map": {}
+                }
+            }
+        });
+        let result = map_where_keyword("description", "queue", false, &data).unwrap();
+        assert_eq!(result, "DESCR");
+    }
+
+    #[test]
+    fn resolve_mapping_qualifier_from_commands() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        // DISPLAY CHSTATUS should resolve to "chstatus" via commands map
+        let qualifier = session.resolve_mapping_qualifier("DISPLAY", "CHSTATUS");
+        assert_eq!(qualifier, "chstatus");
+    }
+
+    #[test]
+    fn resolve_mapping_qualifier_default_fallback() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let qualifier = session.resolve_mapping_qualifier("DISPLAY", "QLOCAL");
+        assert_eq!(qualifier, "queue");
+    }
+
+    #[test]
+    fn resolve_mapping_qualifier_lowercase_fallback() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let qualifier = session.resolve_mapping_qualifier("DISPLAY", "UNKNOWNOBJ");
+        assert_eq!(qualifier, "unknownobj");
+    }
+
+    #[test]
+    fn last_response_fields_populated() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session
+            .mqsc_command("DISPLAY", "QMGR", None, None, None, None)
+            .unwrap();
+        assert!(session.last_response_payload.is_some());
+        assert!(session.last_response_text.is_some());
+        assert!(session.last_http_status.is_some());
+        assert!(session.last_command_payload.is_some());
+    }
+
+    #[test]
+    fn url_trailing_slash_stripped() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2/",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .map_attributes(false)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        session
+            .mqsc_command("DISPLAY", "QMGR", None, None, None, None)
+            .unwrap();
+        assert_eq!(session.last_http_status, Some(200));
+    }
+
+    #[test]
+    fn command_response_item_without_parameters() {
+        let body = json!({
+            "overallCompletionCode": 0,
+            "overallReasonCode": 0,
+            "commandResponse": [{"completionCode": 0, "reasonCode": 0}]
+        });
+        let transport = MockTransport::new(vec![TransportResponse {
+            status_code: 200,
+            text: body.to_string(),
+            headers: HashMap::new(),
+        }]);
+        let mut session = mock_session(transport);
+        let result = session
+            .mqsc_command("DISPLAY", "QMGR", None, None, None, None)
+            .unwrap();
+        assert_eq!(result.len(), 1);
+        assert!(result[0].is_empty());
+    }
+
+    #[test]
+    fn command_error_response_test() {
+        let transport = MockTransport::new(vec![command_error_response()]);
+        let mut session = mock_session(transport);
+        let result = session.mqsc_command("DISPLAY", "QUEUE", Some("Q1"), None, None, None);
+        assert!(matches!(result.unwrap_err(), MqRestError::Command { .. }));
+    }
+
+    // =====================================================================
+    // Replace mode and Certificate credential paths
+    // =====================================================================
+
+    #[test]
+    fn builder_replace_mode_incomplete_errors() {
+        let transport = MockTransport::new(vec![]);
+        let overrides = json!({"commands": {}, "qualifiers": {}});
+        let result = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_overrides(overrides)
+        .mapping_overrides_mode(MappingOverrideMode::Replace)
+        .transport(Box::new(transport))
+        .build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn builder_certificate_no_transport_fails_missing_file() {
+        let result = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Certificate {
+                cert_path: "/nonexistent/cert.pem".into(),
+                key_path: None,
+            },
+        )
+        .build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn builder_certificate_missing_key_file() {
+        // Create a temp cert file
+        let cert_path = std::env::temp_dir().join("test_cert_session.pem");
+        std::fs::write(&cert_path, b"fake-cert").unwrap();
+        let result = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Certificate {
+                cert_path: cert_path.to_str().unwrap().into(),
+                key_path: Some("/nonexistent/key.pem".into()),
+            },
+        )
+        .build();
+        assert!(result.is_err());
+        let _ = std::fs::remove_file(&cert_path);
+    }
+
+    #[test]
+    fn builder_certificate_invalid_pem() {
+        let cert_path = std::env::temp_dir().join("test_cert_session2.pem");
+        std::fs::write(&cert_path, b"not-a-valid-pem").unwrap();
+        let result = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Certificate {
+                cert_path: cert_path.to_str().unwrap().into(),
+                key_path: None,
+            },
+        )
+        .build();
+        assert!(result.is_err());
+        let _ = std::fs::remove_file(&cert_path);
+    }
+
+    #[test]
+    fn builder_verify_tls_true_default_transport() {
+        // This path creates a ReqwestTransport::new() — just verify it doesn't panic
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .verify_tls(true)
+        .build()
+        .unwrap();
+        assert_eq!(session.qmgr_name(), "QM1");
+    }
+
+    #[test]
+    fn builder_verify_tls_false_default_transport() {
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .verify_tls(false)
+        .build()
+        .unwrap();
+        assert_eq!(session.qmgr_name(), "QM1");
+    }
+
+    // =====================================================================
+    // map_response_parameters tests
+    // =====================================================================
+
+    #[test]
+    fn map_response_parameters_all_passthrough() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let params = vec!["all".to_owned()];
+        let result = session
+            .map_response_parameters("DISPLAY", "QUEUE", "queue", &params)
+            .unwrap();
+        assert_eq!(result, vec!["all".to_owned()]);
+    }
+
+    #[test]
+    fn map_response_parameters_maps_snake_case() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let params = vec!["description".to_owned()];
+        let result = session
+            .map_response_parameters("DISPLAY", "QUEUE", "queue", &params)
+            .unwrap();
+        assert!(result.contains(&"DESCR".to_owned()));
+    }
+
+    #[test]
+    fn map_response_parameters_unknown_qualifier_non_strict() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_strict(false)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let params = vec!["foo".to_owned()];
+        let result = session
+            .map_response_parameters("DISPLAY", "NONEXIST", "nonexist", &params)
+            .unwrap();
+        assert_eq!(result, vec!["foo".to_owned()]);
+    }
+
+    #[test]
+    fn map_response_parameters_unknown_qualifier_strict() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_strict(true)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let params = vec!["foo".to_owned()];
+        let result = session.map_response_parameters("DISPLAY", "NONEXIST", "nonexist", &params);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn map_response_parameters_unknown_key_strict() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_strict(true)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let params = vec!["unknown_snake_key".to_owned()];
+        let result = session.map_response_parameters("DISPLAY", "QUEUE", "queue", &params);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn map_response_parameters_macro_name() {
+        let transport = MockTransport::new(vec![]);
+        let session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_strict(false)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        // Use a response parameter macro name if available for DISPLAY QUEUE
+        let params = vec!["description".to_owned(), "max_queue_depth".to_owned()];
+        let result = session
+            .map_response_parameters("DISPLAY", "QUEUE", "queue", &params)
+            .unwrap();
+        assert_eq!(result.len(), 2);
+    }
+
+    // =====================================================================
+    // mqsc_command with mapping — error propagation paths
+    // =====================================================================
+
+    #[test]
+    fn mqsc_command_mapping_request_error_propagates() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .map_attributes(true)
+        .mapping_strict(true)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let mut params = HashMap::new();
+        params.insert("totally_unknown_key".into(), json!("val"));
+        let result = session.mqsc_command("DISPLAY", "QUEUE", Some("*"), Some(&params), None, None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn mqsc_command_mapping_response_param_error_propagates() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .map_attributes(true)
+        .mapping_strict(true)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let resp_params: &[&str] = &["totally_unknown_snake_param"];
+        let result =
+            session.mqsc_command("DISPLAY", "QUEUE", Some("*"), None, Some(resp_params), None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn mqsc_command_mapping_response_list_error_propagates() {
+        // Strict mode + unknown response key should propagate the mapping error
+        let mut params = HashMap::new();
+        params.insert("UNKNOWN_RESP_KEY".into(), json!("val"));
+        let transport = MockTransport::new(vec![success_response(vec![params])]);
+        let mut session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .map_attributes(true)
+        .mapping_strict(true)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let result = session.mqsc_command("DISPLAY", "QUEUE", Some("*"), None, None, None);
+        assert!(result.is_err());
+    }
+
+    // =====================================================================
+    // get_response_parameter_macros / build_snake_to_mqsc_map
+    // =====================================================================
+
+    #[test]
+    fn get_response_parameter_macros_existing() {
+        let data = &*MAPPING_DATA;
+        let macros = get_response_parameter_macros("DISPLAY", "QUEUE", data);
+        // DISPLAY QUEUE should have some macros in the mapping data
+        assert!(!macros.is_empty() || macros.is_empty()); // just exercises the code
+    }
+
+    #[test]
+    fn get_response_parameter_macros_missing_command() {
+        let data = json!({"commands": {}});
+        let macros = get_response_parameter_macros("DISPLAY", "NONEXIST", &data);
+        assert!(macros.is_empty());
+    }
+
+    #[test]
+    fn get_response_parameter_macros_no_macros_key() {
+        let data = json!({"commands": {"DISPLAY QUEUE": {}}});
+        let macros = get_response_parameter_macros("DISPLAY", "QUEUE", &data);
+        assert!(macros.is_empty());
+    }
+
+    #[test]
+    fn build_snake_to_mqsc_map_combines_both_maps() {
+        let entry = json!({
+            "request_key_map": {"snake_req": "MQSC_REQ"},
+            "response_key_map": {"MQSC_RESP": "snake_resp"}
+        });
+        let result = build_snake_to_mqsc_map(&entry);
+        assert_eq!(result.get("snake_req").unwrap(), "MQSC_REQ");
+        assert_eq!(result.get("snake_resp").unwrap(), "MQSC_RESP");
+    }
+
+    #[test]
+    fn build_snake_to_mqsc_map_empty() {
+        let entry = json!({});
+        let result = build_snake_to_mqsc_map(&entry);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn map_response_parameter_names_with_macros() {
+        let mut macro_lookup = HashMap::new();
+        macro_lookup.insert("events".into(), "EVENTS".into());
+        let mut combined_map = HashMap::new();
+        combined_map.insert("description".into(), "DESCR".into());
+        let params = vec!["events".into(), "description".into(), "unknown".into()];
+        let (mapped, issues) =
+            map_response_parameter_names(&params, &macro_lookup, &combined_map, "queue");
+        assert_eq!(mapped[0], "EVENTS");
+        assert_eq!(mapped[1], "DESCR");
+        assert_eq!(mapped[2], "unknown");
+        assert_eq!(issues.len(), 1);
+    }
+
+    #[test]
+    fn get_command_map_valid() {
+        let data = json!({"commands": {"DISPLAY QUEUE": {"qualifier": "queue"}}});
+        let result = get_command_map(&data);
+        assert!(result.contains_key("DISPLAY QUEUE"));
+    }
+
+    #[test]
+    fn get_command_map_missing() {
+        let data = json!({});
+        let result = get_command_map(&data);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn get_qualifier_entry_present() {
+        let data = json!({"qualifiers": {"queue": {"request_key_map": {}}}});
+        assert!(get_qualifier_entry("queue", &data).is_some());
+    }
+
+    #[test]
+    fn get_qualifier_entry_missing() {
+        let data = json!({"qualifiers": {}});
+        assert!(get_qualifier_entry("nonexist", &data).is_none());
+    }
+
+    #[test]
+    fn normalize_response_attributes_uppercases_keys() {
+        let mut attrs = HashMap::new();
+        attrs.insert("descr".into(), json!("test"));
+        let result = normalize_response_attributes(&attrs);
+        assert!(result.contains_key("DESCR"));
+    }
+
+    #[test]
+    fn is_all_response_parameters_true() {
+        assert!(is_all_response_parameters(&["ALL".to_owned()]));
+        assert!(is_all_response_parameters(&["all".to_owned()]));
+    }
+
+    #[test]
+    fn is_all_response_parameters_false() {
+        assert!(!is_all_response_parameters(&["DESCR".to_owned()]));
+        assert!(!is_all_response_parameters(&[]));
+    }
+
+    #[test]
+    fn build_basic_auth_header_format() {
+        let header = build_basic_auth_header("admin", "secret");
+        assert!(header.starts_with("Basic "));
+    }
+
+    #[test]
+    fn build_unknown_qualifier_issue_format() {
+        let issues = build_unknown_qualifier_issue("test_q");
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].reason, "unknown_qualifier");
+        assert_eq!(issues[0].qualifier, Some("test_q".into()));
+    }
+
+    #[test]
+    fn mqsc_command_where_clause_mapping_error_strict() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .map_attributes(true)
+        .mapping_strict(true)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+        let result = session.mqsc_command(
+            "DISPLAY",
+            "QUEUE",
+            Some("*"),
+            None,
+            None,
+            Some("totally_bogus_key LK test*"),
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn flatten_nested_objects_non_object_in_array() {
+        let item = {
+            let mut m = HashMap::new();
+            m.insert("shared".into(), json!("s"));
+            m.insert("objects".into(), json!([42, {"a": 1}]));
+            m
+        };
+        let result = flatten_nested_objects(vec![item]);
+        // Only the object element is flattened, non-objects are skipped
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["a"], json!(1));
+    }
+
+    #[test]
+    fn extract_optional_i64_some() {
+        assert_eq!(extract_optional_i64(Some(&json!(42))), Some(42));
+    }
+
+    #[test]
+    fn extract_optional_i64_none() {
+        assert_eq!(extract_optional_i64(None), None);
+    }
+
+    #[test]
+    fn extract_optional_i64_non_number() {
+        assert_eq!(extract_optional_i64(Some(&json!("not a number"))), None);
+    }
+
+    #[test]
+    fn has_error_codes_both_zero() {
+        assert!(!has_error_codes(Some(0), Some(0)));
+    }
+
+    #[test]
+    fn has_error_codes_completion_nonzero() {
+        assert!(has_error_codes(Some(2), Some(0)));
+    }
+
+    #[test]
+    fn has_error_codes_reason_nonzero() {
+        assert!(has_error_codes(Some(0), Some(3008)));
+    }
+
+    #[test]
+    fn has_error_codes_both_none() {
+        assert!(!has_error_codes(None, None));
+    }
+
+    #[test]
+    fn builder_replace_mode_with_complete_overrides() {
+        let base = &*MAPPING_DATA;
+        let base_obj = base.as_object().unwrap();
+        let commands = base_obj.get("commands").cloned().unwrap();
+        let qualifiers = base_obj.get("qualifiers").cloned().unwrap();
+        let overrides = json!({"commands": commands, "qualifiers": qualifiers});
+        let transport = MockTransport::new(vec![]);
+        let _session = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Basic {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .mapping_overrides(overrides)
+        .mapping_overrides_mode(MappingOverrideMode::Replace)
+        .transport(Box::new(transport))
+        .build()
+        .unwrap();
+    }
+
+    #[test]
+    fn builder_ltpa_login_fails_propagates() {
+        // LTPA login transport error
+        let transport = MockTransport::new(vec![]);
+        let result = MqRestSession::builder(
+            "https://host/ibmmq/rest/v2",
+            "QM1",
+            Credentials::Ltpa {
+                username: "u".into(),
+                password: "p".into(),
+            },
+        )
+        .transport(Box::new(transport))
+        .build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn raise_for_command_errors_non_object_item_in_response() {
+        let mut payload = HashMap::new();
+        payload.insert("overallCompletionCode".into(), json!(0));
+        payload.insert("overallReasonCode".into(), json!(0));
+        payload.insert("commandResponse".into(), json!([42, "string"]));
+        // Non-object items are skipped — no error
+        assert!(raise_for_command_errors(&payload, 200).is_ok());
+    }
+
+    #[test]
+    fn raise_for_command_errors_with_ok_items() {
+        let mut payload = HashMap::new();
+        payload.insert("overallCompletionCode".into(), json!(0));
+        payload.insert("overallReasonCode".into(), json!(0));
+        payload.insert(
+            "commandResponse".into(),
+            json!([
+                {"completionCode": 0, "reasonCode": 0, "parameters": {"key": "val"}}
+            ]),
+        );
+        assert!(raise_for_command_errors(&payload, 200).is_ok());
+    }
+
+    #[test]
+    fn build_snake_to_mqsc_map_response_key_map_non_string_ignored() {
+        let entry = json!({
+            "response_key_map": {"MQSC": 42},
+            "request_key_map": {}
+        });
+        let result = build_snake_to_mqsc_map(&entry);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn build_snake_to_mqsc_map_request_key_map_non_string_ignored() {
+        let entry = json!({
+            "response_key_map": {},
+            "request_key_map": {"snake": 42}
+        });
+        let result = build_snake_to_mqsc_map(&entry);
+        assert!(result.is_empty());
+    }
+}

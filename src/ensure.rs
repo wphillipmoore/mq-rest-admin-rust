@@ -367,3 +367,240 @@ fn value_to_string(value: &Value) -> String {
         other => other.to_string(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_helpers::{
+        MockTransport, command_error_response, empty_success_response, mock_session,
+        success_response,
+    };
+    use serde_json::json;
+
+    // ---- ensure_qmgr ----
+
+    #[test]
+    fn ensure_qmgr_empty_params_unchanged() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qmgr(None).unwrap();
+        assert_eq!(result.action, EnsureAction::Unchanged);
+    }
+
+    #[test]
+    fn ensure_qmgr_matching_params_unchanged() {
+        let mut current = HashMap::new();
+        current.insert("DESCR".into(), json!("test"));
+        let transport = MockTransport::new(vec![success_response(vec![current])]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("test"));
+        let result = session.ensure_qmgr(Some(&params)).unwrap();
+        assert_eq!(result.action, EnsureAction::Unchanged);
+    }
+
+    #[test]
+    fn ensure_qmgr_differing_params_updated() {
+        let mut current = HashMap::new();
+        current.insert("DESCR".into(), json!("old"));
+        let transport = MockTransport::new(vec![
+            success_response(vec![current]),
+            empty_success_response(),
+        ]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("new"));
+        let result = session.ensure_qmgr(Some(&params)).unwrap();
+        assert_eq!(result.action, EnsureAction::Updated);
+        assert!(result.changed.contains(&"DESCR".to_owned()));
+    }
+
+    // ---- ensure_object (via ensure_qlocal) ----
+
+    #[test]
+    fn ensure_qlocal_not_found_created() {
+        let transport =
+            MockTransport::new(vec![command_error_response(), empty_success_response()]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qlocal("MY.Q", None).unwrap();
+        assert_eq!(result.action, EnsureAction::Created);
+    }
+
+    #[test]
+    fn ensure_qlocal_exists_unchanged() {
+        let mut current = HashMap::new();
+        current.insert("DESCR".into(), json!("test"));
+        let transport = MockTransport::new(vec![success_response(vec![current])]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("test"));
+        let result = session.ensure_qlocal("MY.Q", Some(&params)).unwrap();
+        assert_eq!(result.action, EnsureAction::Unchanged);
+    }
+
+    #[test]
+    fn ensure_qlocal_exists_updated() {
+        let mut current = HashMap::new();
+        current.insert("DESCR".into(), json!("old"));
+        let transport = MockTransport::new(vec![
+            success_response(vec![current]),
+            empty_success_response(),
+        ]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("new"));
+        let result = session.ensure_qlocal("MY.Q", Some(&params)).unwrap();
+        assert_eq!(result.action, EnsureAction::Updated);
+    }
+
+    #[test]
+    fn ensure_qlocal_empty_params_not_found_created() {
+        let transport =
+            MockTransport::new(vec![command_error_response(), empty_success_response()]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qlocal("MY.Q", None).unwrap();
+        assert_eq!(result.action, EnsureAction::Created);
+    }
+
+    #[test]
+    fn ensure_qlocal_empty_params_exists_unchanged() {
+        let current = HashMap::new();
+        let transport = MockTransport::new(vec![success_response(vec![current])]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qlocal("MY.Q", None).unwrap();
+        assert_eq!(result.action, EnsureAction::Unchanged);
+    }
+
+    #[test]
+    fn ensure_qlocal_non_command_error_propagated() {
+        let transport = MockTransport::new(vec![]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qlocal("MY.Q", None);
+        assert!(result.is_err());
+    }
+
+    // ---- values_match ----
+
+    #[test]
+    fn values_match_case_insensitive() {
+        assert!(values_match(&json!("YES"), Some(&json!("yes"))));
+    }
+
+    #[test]
+    fn values_match_trimmed() {
+        assert!(values_match(&json!("YES"), Some(&json!(" YES "))));
+    }
+
+    #[test]
+    fn values_match_no_match() {
+        assert!(!values_match(&json!("YES"), Some(&json!("NO"))));
+    }
+
+    #[test]
+    fn values_match_none_current() {
+        assert!(!values_match(&json!("YES"), None));
+    }
+
+    // ---- value_to_string ----
+
+    #[test]
+    fn value_to_string_string() {
+        assert_eq!(value_to_string(&json!("hello")), "hello");
+    }
+
+    #[test]
+    fn value_to_string_number() {
+        assert_eq!(value_to_string(&json!(42)), "42");
+    }
+
+    #[test]
+    fn value_to_string_bool() {
+        assert_eq!(value_to_string(&json!(true)), "true");
+    }
+
+    #[test]
+    fn value_to_string_null() {
+        assert_eq!(value_to_string(&json!(null)), "");
+    }
+
+    #[test]
+    fn value_to_string_other() {
+        let val = json!({"key": "val"});
+        let result = value_to_string(&val);
+        assert!(result.contains("key"));
+    }
+
+    // ---- Macro-generated per-method ensure tests ----
+
+    macro_rules! test_ensure_created {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _created>]() {
+                    let transport = MockTransport::new(vec![
+                        command_error_response(),
+                        empty_success_response(),
+                    ]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method("OBJ", None).unwrap();
+                    assert_eq!(result.action, EnsureAction::Created);
+                }
+            }
+        };
+    }
+
+    test_ensure_created!(ensure_qlocal);
+    test_ensure_created!(ensure_qremote);
+    test_ensure_created!(ensure_qalias);
+    test_ensure_created!(ensure_qmodel);
+    test_ensure_created!(ensure_channel);
+    test_ensure_created!(ensure_authinfo);
+    test_ensure_created!(ensure_listener);
+    test_ensure_created!(ensure_namelist);
+    test_ensure_created!(ensure_process);
+    test_ensure_created!(ensure_service);
+    test_ensure_created!(ensure_topic);
+    test_ensure_created!(ensure_sub);
+    test_ensure_created!(ensure_stgclass);
+    test_ensure_created!(ensure_comminfo);
+    test_ensure_created!(ensure_cfstruct);
+
+    #[test]
+    fn ensure_qlocal_not_found_with_params_created() {
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("my queue"));
+        let transport =
+            MockTransport::new(vec![command_error_response(), empty_success_response()]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qlocal("MY.Q", Some(&params)).unwrap();
+        assert_eq!(result.action, EnsureAction::Created);
+    }
+
+    #[test]
+    fn ensure_qlocal_define_fails() {
+        // Object not found → DEFINE fails
+        let transport = MockTransport::new(vec![
+            command_error_response(),
+            // No response for DEFINE → transport error
+        ]);
+        let mut session = mock_session(transport);
+        let result = session.ensure_qlocal("MY.Q", None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn ensure_qlocal_alter_fails() {
+        // Object exists with different params → ALTER fails
+        let mut current = HashMap::new();
+        current.insert("DESCR".into(), json!("old"));
+        let transport = MockTransport::new(vec![
+            success_response(vec![current]),
+            // No response for ALTER → transport error
+        ]);
+        let mut session = mock_session(transport);
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("new"));
+        let result = session.ensure_qlocal("MY.Q", Some(&params));
+        assert!(result.is_err());
+    }
+}

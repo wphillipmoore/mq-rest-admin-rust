@@ -2680,3 +2680,341 @@ impl MqRestSession {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_helpers::{
+        MockTransport, empty_success_response, mock_session, success_response,
+    };
+    use serde_json::json;
+
+    // -----------------------------------------------------------------
+    // Macro: Pattern 1 — Singleton DISPLAY (returns Option)
+    // -----------------------------------------------------------------
+    macro_rules! test_singleton_display {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _returns_option>]() {
+                    let transport = MockTransport::new(vec![empty_success_response()]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method(None, None).unwrap();
+                    assert!(result.is_none());
+                }
+
+                #[test]
+                fn [<test_ $method _error_propagates>]() {
+                    let transport = MockTransport::new(vec![]);
+                    let mut session = mock_session(transport);
+                    assert!(session.$method(None, None).is_err());
+                }
+            }
+        };
+    }
+
+    test_singleton_display!(display_qmgr);
+    test_singleton_display!(display_qmstatus);
+    test_singleton_display!(display_cmdserv);
+
+    // -----------------------------------------------------------------
+    // Macro: Pattern 2 — List DISPLAY (returns Vec)
+    // -----------------------------------------------------------------
+    macro_rules! test_list_display {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _returns_vec>]() {
+                    let transport = MockTransport::new(vec![empty_success_response()]);
+                    let mut session = mock_session(transport);
+                    let result = session.$method(None, None, None, None).unwrap();
+                    assert!(result.is_empty());
+                }
+
+                #[test]
+                fn [<test_ $method _error_propagates>]() {
+                    let transport = MockTransport::new(vec![]);
+                    let mut session = mock_session(transport);
+                    assert!(session.$method(None, None, None, None).is_err());
+                }
+            }
+        };
+    }
+
+    test_list_display!(display_queue);
+    test_list_display!(display_channel);
+    test_list_display!(display_apstatus);
+    test_list_display!(display_archive);
+    test_list_display!(display_authinfo);
+    test_list_display!(display_authrec);
+    test_list_display!(display_authserv);
+    test_list_display!(display_cfstatus);
+    test_list_display!(display_cfstruct);
+    test_list_display!(display_chinit);
+    test_list_display!(display_chlauth);
+    test_list_display!(display_chstatus);
+    test_list_display!(display_clusqmgr);
+    test_list_display!(display_comminfo);
+    test_list_display!(display_conn);
+    test_list_display!(display_entauth);
+    test_list_display!(display_group);
+    test_list_display!(display_listener);
+    test_list_display!(display_log);
+    test_list_display!(display_lsstatus);
+    test_list_display!(display_maxsmsgs);
+    test_list_display!(display_namelist);
+    test_list_display!(display_policy);
+    test_list_display!(display_process);
+    test_list_display!(display_pubsub);
+    test_list_display!(display_qstatus);
+    test_list_display!(display_sbstatus);
+    test_list_display!(display_security);
+    test_list_display!(display_service);
+    test_list_display!(display_smds);
+    test_list_display!(display_smdsconn);
+    test_list_display!(display_stgclass);
+    test_list_display!(display_sub);
+    test_list_display!(display_svstatus);
+    test_list_display!(display_system);
+    test_list_display!(display_tcluster);
+    test_list_display!(display_thread);
+    test_list_display!(display_topic);
+    test_list_display!(display_tpstatus);
+    test_list_display!(display_trace);
+    test_list_display!(display_usage);
+
+    // -----------------------------------------------------------------
+    // Macro: Pattern 3a — Mutating with required name (&str)
+    // -----------------------------------------------------------------
+    macro_rules! test_mutating_required_name {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![empty_success_response()]);
+                    let mut session = mock_session(transport);
+                    session.$method("OBJ1", None, None).unwrap();
+                }
+
+                #[test]
+                fn [<test_ $method _error_propagates>]() {
+                    let transport = MockTransport::new(vec![]);
+                    let mut session = mock_session(transport);
+                    assert!(session.$method("OBJ1", None, None).is_err());
+                }
+            }
+        };
+    }
+
+    test_mutating_required_name!(define_qlocal);
+    test_mutating_required_name!(define_qremote);
+    test_mutating_required_name!(define_qalias);
+    test_mutating_required_name!(define_qmodel);
+    test_mutating_required_name!(delete_queue);
+    test_mutating_required_name!(define_channel);
+    test_mutating_required_name!(delete_channel);
+
+    // -----------------------------------------------------------------
+    // Macro: Pattern 3a — Mutating with optional name (Option<&str>)
+    // -----------------------------------------------------------------
+    macro_rules! test_mutating_optional_name {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![empty_success_response()]);
+                    let mut session = mock_session(transport);
+                    session.$method(Some("OBJ1"), None, None).unwrap();
+                }
+
+                #[test]
+                fn [<test_ $method _error_propagates>]() {
+                    let transport = MockTransport::new(vec![]);
+                    let mut session = mock_session(transport);
+                    assert!(session.$method(Some("OBJ1"), None, None).is_err());
+                }
+            }
+        };
+    }
+
+    test_mutating_optional_name!(alter_authinfo);
+    test_mutating_optional_name!(alter_buffpool);
+    test_mutating_optional_name!(alter_cfstruct);
+    test_mutating_optional_name!(alter_channel);
+    test_mutating_optional_name!(alter_comminfo);
+    test_mutating_optional_name!(alter_listener);
+    test_mutating_optional_name!(alter_namelist);
+    test_mutating_optional_name!(alter_process);
+    test_mutating_optional_name!(alter_psid);
+    test_mutating_optional_name!(alter_security);
+    test_mutating_optional_name!(alter_service);
+    test_mutating_optional_name!(alter_smds);
+    test_mutating_optional_name!(alter_stgclass);
+    test_mutating_optional_name!(alter_sub);
+    test_mutating_optional_name!(alter_topic);
+    test_mutating_optional_name!(alter_trace);
+    test_mutating_optional_name!(archive_log);
+    test_mutating_optional_name!(backup_cfstruct);
+    test_mutating_optional_name!(clear_qlocal);
+    test_mutating_optional_name!(clear_topicstr);
+    test_mutating_optional_name!(define_authinfo);
+    test_mutating_optional_name!(define_buffpool);
+    test_mutating_optional_name!(define_cfstruct);
+    test_mutating_optional_name!(define_comminfo);
+    test_mutating_optional_name!(define_listener);
+    test_mutating_optional_name!(define_log);
+    test_mutating_optional_name!(define_maxsmsgs);
+    test_mutating_optional_name!(define_namelist);
+    test_mutating_optional_name!(define_process);
+    test_mutating_optional_name!(define_psid);
+    test_mutating_optional_name!(define_service);
+    test_mutating_optional_name!(define_stgclass);
+    test_mutating_optional_name!(define_sub);
+    test_mutating_optional_name!(define_topic);
+    test_mutating_optional_name!(delete_authinfo);
+    test_mutating_optional_name!(delete_authrec);
+    test_mutating_optional_name!(delete_buffpool);
+    test_mutating_optional_name!(delete_cfstruct);
+    test_mutating_optional_name!(delete_comminfo);
+    test_mutating_optional_name!(delete_listener);
+    test_mutating_optional_name!(delete_namelist);
+    test_mutating_optional_name!(delete_policy);
+    test_mutating_optional_name!(delete_process);
+    test_mutating_optional_name!(delete_psid);
+    test_mutating_optional_name!(delete_qalias);
+    test_mutating_optional_name!(delete_qlocal);
+    test_mutating_optional_name!(delete_qmodel);
+    test_mutating_optional_name!(delete_qremote);
+    test_mutating_optional_name!(delete_service);
+    test_mutating_optional_name!(delete_stgclass);
+    test_mutating_optional_name!(delete_sub);
+    test_mutating_optional_name!(delete_topic);
+    test_mutating_optional_name!(move_qlocal);
+    test_mutating_optional_name!(ping_channel);
+    test_mutating_optional_name!(purge_channel);
+    test_mutating_optional_name!(recover_bsds);
+    test_mutating_optional_name!(recover_cfstruct);
+    test_mutating_optional_name!(refresh_cluster);
+    test_mutating_optional_name!(refresh_security);
+    test_mutating_optional_name!(reset_cfstruct);
+    test_mutating_optional_name!(reset_channel);
+    test_mutating_optional_name!(reset_cluster);
+    test_mutating_optional_name!(reset_qstats);
+    test_mutating_optional_name!(reset_smds);
+    test_mutating_optional_name!(reset_tpipe);
+    test_mutating_optional_name!(resolve_channel);
+    test_mutating_optional_name!(resolve_indoubt);
+    test_mutating_optional_name!(rverify_security);
+    test_mutating_optional_name!(set_archive);
+    test_mutating_optional_name!(set_authrec);
+    test_mutating_optional_name!(set_chlauth);
+    test_mutating_optional_name!(set_log);
+    test_mutating_optional_name!(set_policy);
+    test_mutating_optional_name!(set_system);
+    test_mutating_optional_name!(start_channel);
+    test_mutating_optional_name!(start_chinit);
+    test_mutating_optional_name!(start_listener);
+    test_mutating_optional_name!(start_service);
+    test_mutating_optional_name!(start_smdsconn);
+    test_mutating_optional_name!(start_trace);
+    test_mutating_optional_name!(stop_channel);
+    test_mutating_optional_name!(stop_chinit);
+    test_mutating_optional_name!(stop_conn);
+    test_mutating_optional_name!(stop_listener);
+    test_mutating_optional_name!(stop_service);
+    test_mutating_optional_name!(stop_smdsconn);
+    test_mutating_optional_name!(stop_trace);
+
+    // -----------------------------------------------------------------
+    // Macro: Pattern 3b — Mutating without name
+    // -----------------------------------------------------------------
+    macro_rules! test_mutating_no_name {
+        ($method:ident) => {
+            paste::paste! {
+                #[test]
+                fn [<test_ $method _ok>]() {
+                    let transport = MockTransport::new(vec![empty_success_response()]);
+                    let mut session = mock_session(transport);
+                    session.$method(None, None).unwrap();
+                }
+
+                #[test]
+                fn [<test_ $method _error_propagates>]() {
+                    let transport = MockTransport::new(vec![]);
+                    let mut session = mock_session(transport);
+                    assert!(session.$method(None, None).is_err());
+                }
+            }
+        };
+    }
+
+    test_mutating_no_name!(alter_qmgr);
+    test_mutating_no_name!(ping_qmgr);
+    test_mutating_no_name!(refresh_qmgr);
+    test_mutating_no_name!(reset_qmgr);
+    test_mutating_no_name!(resume_qmgr);
+    test_mutating_no_name!(start_cmdserv);
+    test_mutating_no_name!(start_qmgr);
+    test_mutating_no_name!(stop_cmdserv);
+    test_mutating_no_name!(stop_qmgr);
+    test_mutating_no_name!(suspend_qmgr);
+
+    // -----------------------------------------------------------------
+    // Hand-crafted tests for command/qualifier verification
+    // -----------------------------------------------------------------
+
+    #[test]
+    fn display_queue_sends_correct_command() {
+        let mut params = HashMap::new();
+        params.insert("DESCR".into(), json!("test"));
+        let transport = MockTransport::new(vec![success_response(vec![params])]);
+        let mut session = mock_session(transport);
+        session.display_queue(Some("Q1"), None, None, None).unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert_eq!(payload["command"], json!("DISPLAY"));
+        assert_eq!(payload["qualifier"], json!("QUEUE"));
+        assert_eq!(payload["name"], json!("Q1"));
+    }
+
+    #[test]
+    fn define_qlocal_sends_correct_command() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session.define_qlocal("MY.Q", None, None).unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert_eq!(payload["command"], json!("DEFINE"));
+        assert_eq!(payload["qualifier"], json!("QLOCAL"));
+        assert_eq!(payload["name"], json!("MY.Q"));
+    }
+
+    #[test]
+    fn alter_qmgr_sends_correct_command() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session.alter_qmgr(None, None).unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert_eq!(payload["command"], json!("ALTER"));
+        assert_eq!(payload["qualifier"], json!("QMGR"));
+        assert!(!payload.contains_key("name"));
+    }
+
+    #[test]
+    fn display_queue_default_name_wildcard() {
+        let transport = MockTransport::new(vec![empty_success_response()]);
+        let mut session = mock_session(transport);
+        session.display_queue(None, None, None, None).unwrap();
+        let payload = session.last_command_payload.unwrap();
+        assert_eq!(payload["name"], json!("*"));
+    }
+
+    #[test]
+    fn singleton_display_returns_some_when_present() {
+        let mut params = HashMap::new();
+        params.insert("QMNAME".into(), json!("QM1"));
+        let transport = MockTransport::new(vec![success_response(vec![params])]);
+        let mut session = mock_session(transport);
+        let result = session.display_qmgr(None, None).unwrap();
+        assert!(result.is_some());
+        assert_eq!(result.unwrap()["QMNAME"], json!("QM1"));
+    }
+}
