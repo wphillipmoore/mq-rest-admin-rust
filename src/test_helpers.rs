@@ -12,6 +12,7 @@ use crate::transport::{MqRestTransport, TransportResponse};
 
 /// Captures the details of a single request made via `MockTransport`.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct RecordedRequest {
     pub url: String,
     pub payload: HashMap<String, Value>,
