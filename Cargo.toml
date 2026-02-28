@@ -23,6 +23,7 @@ paste = "1"
 
 [features]
 integration = []
+examples = []
 
 [lints.rust]
 unsafe_code = "forbid"

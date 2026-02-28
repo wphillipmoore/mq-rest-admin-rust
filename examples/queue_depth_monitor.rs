@@ -4,42 +4,14 @@
 //! are approaching capacity, and sorts by depth percentage descending.
 //!
 //! ```text
-//! cargo run --example queue_depth_monitor
+//! cargo run --features examples --example queue_depth_monitor
 //! ```
 //!
 //! Set `DEPTH_THRESHOLD_PCT` to change the warning threshold (default 80).
 
-use std::collections::HashMap;
 use std::env;
 
-use mq_rest_admin::{Credentials, MqRestSession};
-use serde_json::Value;
-
-fn get_str(map: &HashMap<String, Value>, key: &str) -> String {
-    map.get(key)
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .trim()
-        .to_string()
-}
-
-fn get_i64(map: &HashMap<String, Value>, key: &str) -> i64 {
-    match map.get(key) {
-        Some(Value::Number(n)) => n.as_i64().unwrap_or(0),
-        Some(Value::String(s)) => s.trim().parse().unwrap_or(0),
-        _ => 0,
-    }
-}
-
-struct QueueDepthInfo {
-    name: String,
-    current_depth: i64,
-    max_depth: i64,
-    depth_pct: f64,
-    open_input: i64,
-    open_output: i64,
-    warning: bool,
-}
+use mq_rest_admin::{Credentials, MqRestSession, examples};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rest_base_url = env::var("MQ_REST_BASE_URL")
@@ -60,37 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .verify_tls(false)
     .build()?;
 
-    let queues = session.display_queue(Some("*"), None, None, None)?;
-    let mut results: Vec<QueueDepthInfo> = Vec::new();
-
-    for queue in &queues {
-        let qtype = get_str(queue, "type").to_uppercase();
-        if qtype != "QLOCAL" && qtype != "LOCAL" {
-            continue;
-        }
-
-        let current_depth = get_i64(queue, "current_queue_depth");
-        let max_depth = get_i64(queue, "max_queue_depth");
-
-        #[allow(clippy::cast_precision_loss)]
-        let depth_pct = if max_depth > 0 {
-            current_depth as f64 / max_depth as f64 * 100.0
-        } else {
-            0.0
-        };
-
-        results.push(QueueDepthInfo {
-            name: get_str(queue, "queue_name"),
-            current_depth,
-            max_depth,
-            depth_pct,
-            open_input: get_i64(queue, "open_input_count"),
-            open_output: get_i64(queue, "open_output_count"),
-            warning: depth_pct >= threshold_pct,
-        });
-    }
-
-    results.sort_by(|a, b| b.depth_pct.total_cmp(&a.depth_pct));
+    let results = examples::monitor_queue_depths(&mut session, threshold_pct)?;
 
     println!(
         "\n{:<40} {:>8} {:>8} {:>6} {:>4} {:>4} Status",

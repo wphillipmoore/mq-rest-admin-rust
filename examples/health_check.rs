@@ -5,53 +5,14 @@
 //! pass/fail summary for each queue manager.
 //!
 //! ```text
-//! cargo run --example health_check
+//! cargo run --features examples --example health_check
 //! ```
 //!
 //! Set `MQ_REST_BASE_URL_QM2` to also check QM2.
 
-use std::collections::HashMap;
 use std::env;
 
-use mq_rest_admin::{Credentials, MqRestSession};
-use serde_json::Value;
-
-fn get_str(map: &HashMap<String, Value>, key: &str) -> String {
-    map.get(key)
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .trim()
-        .to_string()
-}
-
-fn check_health(session: &mut MqRestSession) -> (bool, String, String, Vec<(String, String)>) {
-    let mut status = "UNKNOWN".to_string();
-    let mut command_server = "UNKNOWN".to_string();
-    let mut listeners: Vec<(String, String)> = Vec::new();
-
-    let Ok(_qmgr) = session.display_qmgr(None, None) else {
-        return (false, status, command_server, listeners);
-    };
-
-    if let Ok(Some(qs)) = session.display_qmstatus(None, None) {
-        status = get_str(&qs, "ha_status");
-    }
-
-    if let Ok(Some(cs)) = session.display_cmdserv(None, None) {
-        command_server = get_str(&cs, "status");
-    }
-
-    if let Ok(lst) = session.display_listener(Some("*"), None, None, None) {
-        for listener in lst {
-            let lname = get_str(&listener, "listener_name");
-            let lstatus = get_str(&listener, "start_mode");
-            listeners.push((lname, lstatus));
-        }
-    }
-
-    let passed = status != "UNKNOWN";
-    (passed, status, command_server, listeners)
-}
+use mq_rest_admin::{Credentials, MqRestSession, examples};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rest_base_url = env::var("MQ_REST_BASE_URL")
@@ -86,16 +47,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     for (label, session) in &mut sessions {
-        let (passed, status, command_server, listeners) = check_health(session);
-        let verdict = if passed { "PASS" } else { "FAIL" };
+        let result = examples::check_health(session)?;
+        let verdict = if result.passed { "PASS" } else { "FAIL" };
 
         println!("\n=== {label}: {verdict} ===");
-        println!("  Reachable:      {}", passed || status != "UNKNOWN");
-        println!("  Status:         {status}");
-        println!("  Command server: {command_server}");
-        println!("  Listeners:      {}", listeners.len());
-        for (lname, lstatus) in &listeners {
-            println!("    {lname}: {lstatus}");
+        println!("  Reachable:      {}", result.reachable);
+        println!("  Status:         {}", result.status);
+        println!("  Command server: {}", result.command_server);
+        println!("  Listeners:      {}", result.listeners.len());
+        for listener in &result.listeners {
+            println!("    {}: {}", listener.name, listener.start_mode);
         }
     }
 

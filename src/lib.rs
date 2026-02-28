@@ -20,5 +20,8 @@ pub use session::{MqRestSession, MqRestSessionBuilder};
 pub use sync_ops::{SyncConfig, SyncOperation, SyncResult};
 pub use transport::{MqRestTransport, ReqwestTransport, TransportResponse};
 
+#[cfg(feature = "examples")]
+pub mod examples;
+
 #[cfg(test)]
 pub(crate) mod test_helpers;
