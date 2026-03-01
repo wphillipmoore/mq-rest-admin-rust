@@ -6,7 +6,7 @@ use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64;
 use serde_json::Value;
 
-use crate::auth::{Credentials, LTPA_COOKIE_NAME, perform_ltpa_login};
+use crate::auth::{Credentials, perform_ltpa_login};
 use crate::error::{MappingError, MappingIssue, MqRestError, Result};
 use crate::mapping::{map_request_attributes, map_response_list};
 use crate::mapping_data::MAPPING_DATA;
@@ -206,12 +206,12 @@ impl MqRestSessionBuilder {
             Box::new(ReqwestTransport::new_insecure())
         };
 
-        let ltpa_token = if let Credentials::Ltpa {
+        let (ltpa_cookie_name, ltpa_token) = if let Credentials::Ltpa {
             ref username,
             ref password,
         } = self.credentials
         {
-            Some(perform_ltpa_login(
+            let (name, token) = perform_ltpa_login(
                 transport.as_ref(),
                 &rest_base_url,
                 username,
@@ -219,9 +219,10 @@ impl MqRestSessionBuilder {
                 self.csrf_token.as_deref(),
                 self.timeout_seconds,
                 self.verify_tls,
-            )?)
+            )?;
+            (Some(name), Some(token))
         } else {
-            None
+            (None, None)
         };
 
         Ok(MqRestSession {
@@ -236,6 +237,7 @@ impl MqRestSessionBuilder {
             credentials: self.credentials,
             mapping_data,
             transport,
+            ltpa_cookie_name,
             ltpa_token,
             last_response_payload: None,
             last_response_text: None,
@@ -258,6 +260,7 @@ pub struct MqRestSession {
     credentials: Credentials,
     mapping_data: Value,
     transport: Box<dyn MqRestTransport>,
+    ltpa_cookie_name: Option<String>,
     ltpa_token: Option<String>,
 
     /// The parsed JSON payload from the most recent command.
@@ -426,8 +429,10 @@ impl MqRestSession {
                 );
             }
             Credentials::Ltpa { .. } => {
-                if let Some(ref token) = self.ltpa_token {
-                    headers.insert("Cookie".into(), format!("{LTPA_COOKIE_NAME}={token}"));
+                if let (Some(ref name), Some(ref token)) =
+                    (&self.ltpa_cookie_name, &self.ltpa_token)
+                {
+                    headers.insert("Cookie".into(), format!("{name}={token}"));
                 }
             }
             Credentials::Certificate { .. } => {}
@@ -905,7 +910,8 @@ mod tests {
         .transport(Box::new(transport))
         .build()
         .unwrap();
-        assert!(session.ltpa_token.is_some());
+        assert_eq!(session.ltpa_cookie_name.as_deref(), Some("LtpaToken2"));
+        assert_eq!(session.ltpa_token.as_deref(), Some("tok"));
     }
 
     #[test]
@@ -2286,6 +2292,7 @@ mod tests {
             },
             mapping_data: json!({}),
             transport: Box::new(transport),
+            ltpa_cookie_name: None,
             ltpa_token: None,
             last_response_payload: None,
             last_response_text: None,

@@ -40,7 +40,10 @@ pub enum Credentials {
     },
 }
 
-/// Perform an LTPA login and return the `LtpaToken2` token value.
+/// Perform an LTPA login and return the cookie name and token value.
+///
+/// The cookie name may be `"LtpaToken2"` or a suffixed variant like
+/// `"LtpaToken2_xyz"`.
 pub(crate) fn perform_ltpa_login(
     transport: &dyn MqRestTransport,
     rest_base_url: &str,
@@ -49,7 +52,7 @@ pub(crate) fn perform_ltpa_login(
     csrf_token: Option<&str>,
     timeout_seconds: Option<f64>,
     verify_tls: bool,
-) -> crate::error::Result<String> {
+) -> crate::error::Result<(String, String)> {
     let login_url = format!("{rest_base_url}{LTPA_LOGIN_PATH}");
     let mut headers = HashMap::new();
     headers.insert("Accept".into(), "application/json".into());
@@ -69,7 +72,7 @@ pub(crate) fn perform_ltpa_login(
         });
     }
     match extract_ltpa_token(&response) {
-        Some(token) => Ok(token),
+        Some(result) => Ok(result),
         None => Err(MqRestError::Auth {
             url: login_url,
             status_code: Some(response.status_code),
@@ -78,25 +81,39 @@ pub(crate) fn perform_ltpa_login(
     }
 }
 
-/// Extract the `LtpaToken2` value from response `Set-Cookie` headers.
-fn extract_ltpa_token(response: &TransportResponse) -> Option<String> {
+/// Extract an `LtpaToken2` cookie from response `Set-Cookie` headers.
+///
+/// Matches any cookie whose name equals `"LtpaToken2"` or starts with
+/// `"LtpaToken2"` (e.g. `"LtpaToken2_abcdef"`), using prefix matching
+/// to support Liberty's suffixed cookie names.
+///
+/// Returns a `(cookie_name, token_value)` tuple, or `None` if not found.
+fn extract_ltpa_token(response: &TransportResponse) -> Option<(String, String)> {
     let set_cookie = response
         .headers
         .get("Set-Cookie")
         .or_else(|| response.headers.get("set-cookie"))?;
-    // Parse cookie header to find LtpaToken2
+    // Parse cookie header to find LtpaToken2 (exact or prefixed name)
     for cookie_part in set_cookie.split(';') {
         let cookie_part = cookie_part.trim();
-        if let Some(value) = cookie_part.strip_prefix(&format!("{LTPA_COOKIE_NAME}=")) {
-            return Some(value.to_owned());
+        if cookie_part.starts_with(LTPA_COOKIE_NAME) {
+            if let Some(eq_index) = cookie_part.find('=') {
+                let name = &cookie_part[..eq_index];
+                let value = &cookie_part[eq_index + 1..];
+                return Some((name.to_owned(), value.to_owned()));
+            }
         }
     }
     // Also try comma-separated cookies
     for cookie_entry in set_cookie.split(',') {
         for cookie_part in cookie_entry.split(';') {
             let cookie_part = cookie_part.trim();
-            if let Some(value) = cookie_part.strip_prefix(&format!("{LTPA_COOKIE_NAME}=")) {
-                return Some(value.to_owned());
+            if cookie_part.starts_with(LTPA_COOKIE_NAME) {
+                if let Some(eq_index) = cookie_part.find('=') {
+                    let name = &cookie_part[..eq_index];
+                    let value = &cookie_part[eq_index + 1..];
+                    return Some((name.to_owned(), value.to_owned()));
+                }
             }
         }
     }
@@ -133,7 +150,29 @@ mod tests {
             Some(10.0),
             true,
         );
-        assert_eq!(result.unwrap(), "abc123");
+        let (name, value) = result.unwrap();
+        assert_eq!(name, "LtpaToken2");
+        assert_eq!(value, "abc123");
+    }
+
+    #[test]
+    fn ltpa_login_success_with_suffixed_cookie() {
+        let transport = MockTransport::new(vec![login_response_with_cookie(
+            "Set-Cookie",
+            "LtpaToken2_abcdef=suffixed_tok; Path=/",
+        )]);
+        let result = perform_ltpa_login(
+            &transport,
+            "https://host/ibmmq/rest/v2",
+            "user",
+            "pass",
+            None,
+            None,
+            false,
+        );
+        let (name, value) = result.unwrap();
+        assert_eq!(name, "LtpaToken2_abcdef");
+        assert_eq!(value, "suffixed_tok");
     }
 
     #[test]
@@ -143,7 +182,9 @@ mod tests {
             "LtpaToken2=token456; Path=/",
         )]);
         let result = perform_ltpa_login(&transport, "https://h", "u", "p", None, None, false);
-        assert_eq!(result.unwrap(), "token456");
+        let (name, value) = result.unwrap();
+        assert_eq!(name, "LtpaToken2");
+        assert_eq!(value, "token456");
     }
 
     #[test]
@@ -153,7 +194,9 @@ mod tests {
             "other=x, LtpaToken2=fromcomma; Path=/",
         )]);
         let result = perform_ltpa_login(&transport, "https://h", "u", "p", None, None, false);
-        assert_eq!(result.unwrap(), "fromcomma");
+        let (name, value) = result.unwrap();
+        assert_eq!(name, "LtpaToken2");
+        assert_eq!(value, "fromcomma");
     }
 
     #[test]
