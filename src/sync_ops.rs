@@ -23,8 +23,21 @@ impl SyncConfig {
     ///
     /// Returns [`MqRestError::InvalidConfig`] if either value is not positive.
     pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
-        validate_positive("timeout_seconds", timeout_seconds)?;
-        validate_positive("poll_interval_seconds", poll_interval_seconds)?;
+        if timeout_seconds <= 0.0 || poll_interval_seconds <= 0.0 {
+            let field = if timeout_seconds <= 0.0 {
+                "timeout_seconds"
+            } else {
+                "poll_interval_seconds"
+            };
+            let value = if timeout_seconds <= 0.0 {
+                timeout_seconds
+            } else {
+                poll_interval_seconds
+            };
+            return Err(MqRestError::InvalidConfig {
+                message: format!("{field} must be positive, got {value}"),
+            });
+        }
         Ok(Self {
             timeout_seconds,
             poll_interval_seconds,
@@ -372,15 +385,6 @@ fn restart(
         polls: stop_result.polls + start_result.polls,
         elapsed_seconds: stop_result.elapsed_seconds + start_result.elapsed_seconds,
     })
-}
-
-fn validate_positive(field: &str, value: f64) -> Result<()> {
-    if value <= 0.0 {
-        return Err(MqRestError::InvalidConfig {
-            message: format!("{field} must be positive, got {value}"),
-        });
-    }
-    Ok(())
 }
 
 fn has_status(
