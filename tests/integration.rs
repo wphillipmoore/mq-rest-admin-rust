@@ -916,11 +916,10 @@ fn ensure_channel_lifecycle() {
 }
 
 // ---------------------------------------------------------------------------
-// LTPA auth (ignored — MQ dev container doesn't return LtpaToken2 cookies)
+// LTPA auth
 // ---------------------------------------------------------------------------
 
 #[test]
-#[ignore = "MQ developer container does not return LtpaToken2 cookies"]
 fn ltpa_auth_display_qmgr() {
     let config = load_config();
     let mut session = MqRestSession::builder(
