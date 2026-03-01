@@ -43,13 +43,13 @@ impl SyncConfig {
 
     /// Maximum wall-clock seconds to wait for the target state.
     #[must_use]
-    pub fn timeout_seconds(&self) -> f64 {
+    pub const fn timeout_seconds(&self) -> f64 {
         self.timeout_seconds
     }
 
     /// Seconds to sleep between status polls.
     #[must_use]
-    pub fn poll_interval_seconds(&self) -> f64 {
+    pub const fn poll_interval_seconds(&self) -> f64 {
         self.poll_interval_seconds
     }
 }
