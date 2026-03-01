@@ -409,7 +409,7 @@ fn lifecycle_qlocal() {
     let mut session = build_session(&config);
 
     // Pre-cleanup.
-    let _ = session.delete_qlocal(Some(TEST_QLOCAL), None, None);
+    let _ = session.delete_qlocal(TEST_QLOCAL, None, None);
 
     // Define.
     let define_params = params(&[
@@ -429,7 +429,7 @@ fn lifecycle_qlocal() {
 
     // Delete.
     session
-        .delete_qlocal(Some(TEST_QLOCAL), None, None)
+        .delete_qlocal(TEST_QLOCAL, None, None)
         .expect("delete_qlocal failed");
 
     // Verify gone.
@@ -443,7 +443,7 @@ fn lifecycle_qremote() {
     let config = load_config();
     let mut session = build_session(&config);
 
-    let _ = session.delete_qremote(Some(TEST_QREMOTE), None, None);
+    let _ = session.delete_qremote(TEST_QREMOTE, None, None);
 
     let define_params = params(&[
         ("replace", json!("yes")),
@@ -462,7 +462,7 @@ fn lifecycle_qremote() {
     assert_results_contain(&results, TEST_QREMOTE);
 
     session
-        .delete_qremote(Some(TEST_QREMOTE), None, None)
+        .delete_qremote(TEST_QREMOTE, None, None)
         .expect("delete_qremote failed");
 
     verify_object_gone(&mut session, TEST_QREMOTE, |s, n| {
@@ -475,7 +475,7 @@ fn lifecycle_qalias() {
     let config = load_config();
     let mut session = build_session(&config);
 
-    let _ = session.delete_qalias(Some(TEST_QALIAS), None, None);
+    let _ = session.delete_qalias(TEST_QALIAS, None, None);
 
     let define_params = params(&[
         ("replace", json!("yes")),
@@ -492,7 +492,7 @@ fn lifecycle_qalias() {
     assert_results_contain(&results, TEST_QALIAS);
 
     session
-        .delete_qalias(Some(TEST_QALIAS), None, None)
+        .delete_qalias(TEST_QALIAS, None, None)
         .expect("delete_qalias failed");
 
     verify_object_gone(&mut session, TEST_QALIAS, |s, n| {
@@ -505,7 +505,7 @@ fn lifecycle_qmodel() {
     let config = load_config();
     let mut session = build_session(&config);
 
-    let _ = session.delete_qmodel(Some(TEST_QMODEL), None, None);
+    let _ = session.delete_qmodel(TEST_QMODEL, None, None);
 
     let define_params = params(&[
         ("replace", json!("yes")),
@@ -523,7 +523,7 @@ fn lifecycle_qmodel() {
     assert_results_contain(&results, TEST_QMODEL);
 
     session
-        .delete_qmodel(Some(TEST_QMODEL), None, None)
+        .delete_qmodel(TEST_QMODEL, None, None)
         .expect("delete_qmodel failed");
 
     verify_object_gone(&mut session, TEST_QMODEL, |s, n| {
@@ -847,7 +847,7 @@ fn ensure_qlocal_lifecycle() {
     let mut session = build_session_non_strict(&config);
 
     // Pre-cleanup.
-    let _ = session.delete_qlocal(Some(TEST_ENSURE_QLOCAL), None, None);
+    let _ = session.delete_qlocal(TEST_ENSURE_QLOCAL, None, None);
 
     // Create.
     let create_params = params(&[("description", json!("ensure test"))]);
@@ -871,7 +871,7 @@ fn ensure_qlocal_lifecycle() {
 
     // Cleanup.
     session
-        .delete_qlocal(Some(TEST_ENSURE_QLOCAL), None, None)
+        .delete_qlocal(TEST_ENSURE_QLOCAL, None, None)
         .expect("delete_qlocal cleanup failed");
 }
 
