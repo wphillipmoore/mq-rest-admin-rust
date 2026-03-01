@@ -24,6 +24,7 @@ impl SyncConfig {
     /// # Errors
     ///
     /// Returns [`MqRestError::InvalidConfig`] if either value is not positive.
+    #[allow(clippy::question_mark)]
     pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
         if let Err(e) = check_positive("timeout_seconds", timeout_seconds) {
             return Err(e);
