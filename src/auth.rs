@@ -96,24 +96,24 @@ fn extract_ltpa_token(response: &TransportResponse) -> Option<(String, String)> 
     // Parse cookie header to find LtpaToken2 (exact or prefixed name)
     for cookie_part in set_cookie.split(';') {
         let cookie_part = cookie_part.trim();
-        if cookie_part.starts_with(LTPA_COOKIE_NAME) {
-            if let Some(eq_index) = cookie_part.find('=') {
-                let name = &cookie_part[..eq_index];
-                let value = &cookie_part[eq_index + 1..];
-                return Some((name.to_owned(), value.to_owned()));
-            }
+        if cookie_part.starts_with(LTPA_COOKIE_NAME)
+            && let Some(eq_index) = cookie_part.find('=')
+        {
+            let name = &cookie_part[..eq_index];
+            let value = &cookie_part[eq_index + 1..];
+            return Some((name.to_owned(), value.to_owned()));
         }
     }
     // Also try comma-separated cookies
     for cookie_entry in set_cookie.split(',') {
         for cookie_part in cookie_entry.split(';') {
             let cookie_part = cookie_part.trim();
-            if cookie_part.starts_with(LTPA_COOKIE_NAME) {
-                if let Some(eq_index) = cookie_part.find('=') {
-                    let name = &cookie_part[..eq_index];
-                    let value = &cookie_part[eq_index + 1..];
-                    return Some((name.to_owned(), value.to_owned()));
-                }
+            if cookie_part.starts_with(LTPA_COOKIE_NAME)
+                && let Some(eq_index) = cookie_part.find('=')
+            {
+                let name = &cookie_part[..eq_index];
+                let value = &cookie_part[eq_index + 1..];
+                return Some((name.to_owned(), value.to_owned()));
             }
         }
     }
