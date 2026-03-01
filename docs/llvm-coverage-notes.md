@@ -1,5 +1,14 @@
 # LLVM Coverage Instrumentation Notes
 
+## Table of Contents
+
+- [LLVM 18 Phantom Uncovered Regions (Rust 1.92)](#llvm-18-phantom-uncovered-regions-rust-192)
+  - [Summary](#summary)
+  - [Affected Patterns](#affected-patterns)
+  - [Workarounds Attempted](#workarounds-attempted)
+  - [Resolution](#resolution)
+  - [References](#references)
+
 ## LLVM 18 Phantom Uncovered Regions (Rust 1.92)
 
 ### Summary
