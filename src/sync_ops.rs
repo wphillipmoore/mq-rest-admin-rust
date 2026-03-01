@@ -25,8 +25,12 @@ impl SyncConfig {
     ///
     /// Returns [`MqRestError::InvalidConfig`] if either value is not positive.
     pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
-        check_positive("timeout_seconds", timeout_seconds)?;
-        check_positive("poll_interval_seconds", poll_interval_seconds)?;
+        if let Err(e) = check_positive("timeout_seconds", timeout_seconds) {
+            return Err(e);
+        }
+        if let Err(e) = check_positive("poll_interval_seconds", poll_interval_seconds) {
+            return Err(e);
+        }
         Ok(Self {
             timeout_seconds,
             poll_interval_seconds,
