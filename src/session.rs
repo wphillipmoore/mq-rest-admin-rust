@@ -429,7 +429,7 @@ impl MqRestSession {
                 );
             }
             Credentials::Ltpa { .. } => {
-                if let (Some(ref name), Some(ref token)) =
+                if let (Some(name), Some(token)) =
                     (&self.ltpa_cookie_name, &self.ltpa_token)
                 {
                     headers.insert("Cookie".into(), format!("{name}={token}"));
