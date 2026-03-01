@@ -18,6 +18,22 @@ pub struct SyncConfig {
     pub poll_interval_seconds: f64,
 }
 
+impl SyncConfig {
+    /// Create a new `SyncConfig` with validated parameters.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MqRestError::InvalidConfig`] if either value is not positive.
+    pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
+        check_positive("timeout_seconds", timeout_seconds)?;
+        check_positive("poll_interval_seconds", poll_interval_seconds)?;
+        Ok(Self {
+            timeout_seconds,
+            poll_interval_seconds,
+        })
+    }
+}
+
 impl Default for SyncConfig {
     fn default() -> Self {
         Self {
@@ -339,6 +355,15 @@ fn restart(
         operation: SyncOperation::Restarted,
         polls: stop_result.polls + start_result.polls,
         elapsed_seconds: stop_result.elapsed_seconds + start_result.elapsed_seconds,
+    })
+}
+
+fn check_positive(field: &str, value: f64) -> Result<()> {
+    if value > 0.0 {
+        return Ok(());
+    }
+    Err(MqRestError::InvalidConfig {
+        message: format!("{field} must be positive, got {value}"),
     })
 }
 
@@ -771,5 +796,50 @@ mod tests {
         let mut session = mock_session(transport);
         let result = session.stop_channel_sync("MY.CH", Some(fast_config()));
         assert!(result.is_err());
+    }
+
+    // ---- SyncConfig validation ----
+
+    #[test]
+    fn sync_config_new_valid() {
+        let config = SyncConfig::new(10.0, 0.5).unwrap();
+        assert!((config.timeout_seconds - 10.0).abs() < f64::EPSILON);
+        assert!((config.poll_interval_seconds - 0.5).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn sync_config_new_zero_timeout_rejected() {
+        let err = SyncConfig::new(0.0, 1.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("timeout_seconds must be positive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn sync_config_new_negative_timeout_rejected() {
+        let err = SyncConfig::new(-1.0, 1.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("timeout_seconds must be positive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn sync_config_new_zero_poll_interval_rejected() {
+        let err = SyncConfig::new(30.0, 0.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("poll_interval_seconds must be positive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn sync_config_new_negative_poll_interval_rejected() {
+        let err = SyncConfig::new(30.0, -1.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("poll_interval_seconds must be positive"),
+            "unexpected error: {err}"
+        );
     }
 }

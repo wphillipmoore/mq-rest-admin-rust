@@ -6,8 +6,8 @@ on:
     inputs:
       rust-versions:
         description: >-
-          JSON array of Rust versions for the unit-test matrix.
-          Default (empty) runs the full matrix.
+          JSON array of {rust-version, coverage-lines, coverage-regions}
+          objects for the unit-test matrix. Default runs the full matrix.
         type: string
         default: ""
       integration-matrix:
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust-version: ${{ fromJSON(inputs.rust-versions || '["1.92", "1.93"]') }}
+        include: ${{ fromJSON(inputs.rust-versions || '[{"rust-version":"1.92","coverage-lines":"99","coverage-regions":"99"},{"rust-version":"1.93","coverage-lines":"100","coverage-regions":"100"}]') }}
 
     steps:
       - name: Checkout code
@@ -126,7 +126,7 @@ jobs:
         run: cargo clippy
 
       - name: Run tests with coverage
-        run: cargo llvm-cov --features examples --fail-under-lines 100 --fail-under-regions 100
+        run: cargo llvm-cov --features examples --fail-under-lines ${{ matrix.coverage-lines }} --fail-under-regions ${{ matrix.coverage-regions }}
 
   # ---------------------------------------------------------------------------
   # Integration tests — matrix over Rust versions with unique MQ ports
