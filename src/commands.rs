@@ -9,99 +9,1156 @@ use crate::error::Result;
 use crate::session::MqRestSession;
 
 impl MqRestSession {
-    // -----------------------------------------------------------------------
-    // Pattern 1 -- Singleton DISPLAY (no name, returns first item or None)
-    // -----------------------------------------------------------------------
+    // BEGIN GENERATED MQSC METHODS
+    /// Execute the MQSC `ALTER AUTHINFO` command.
+    pub fn alter_authinfo(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "AUTHINFO",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
 
-    /// Execute the MQSC `DISPLAY QMGR` command.
-    pub fn display_qmgr(
+    /// Execute the MQSC `ALTER BUFFPOOL` command.
+    pub fn alter_buffpool(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "BUFFPOOL",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER CFSTRUCT` command.
+    pub fn alter_cfstruct(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "CFSTRUCT",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER CHANNEL` command.
+    pub fn alter_channel(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "CHANNEL",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER COMMINFO` command.
+    pub fn alter_comminfo(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "COMMINFO",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER LISTENER` command.
+    pub fn alter_listener(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "LISTENER",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER NAMELIST` command.
+    pub fn alter_namelist(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "NAMELIST",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER PROCESS` command.
+    pub fn alter_process(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "PROCESS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER PSID` command.
+    pub fn alter_psid(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "PSID",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER QALIAS` command.
+    pub fn alter_qalias(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "QALIAS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER QLOCAL` command.
+    pub fn alter_qlocal(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "QLOCAL",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER QMGR` command.
+    pub fn alter_qmgr(
         &mut self,
         request_parameters: Option<&HashMap<String, Value>>,
         response_parameters: Option<&[&str]>,
-    ) -> Result<Option<HashMap<String, Value>>> {
-        let objects = self.mqsc_command(
-            "DISPLAY",
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
             "QMGR",
             None,
             request_parameters,
             response_parameters,
             None,
         )?;
-        Ok(objects.into_iter().next())
+        Ok(())
     }
 
-    /// Execute the MQSC `DISPLAY QMSTATUS` command.
-    pub fn display_qmstatus(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<Option<HashMap<String, Value>>> {
-        let objects = self.mqsc_command(
-            "DISPLAY",
-            "QMSTATUS",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(objects.into_iter().next())
-    }
-
-    /// Execute the MQSC `DISPLAY CMDSERV` command.
-    pub fn display_cmdserv(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<Option<HashMap<String, Value>>> {
-        let objects = self.mqsc_command(
-            "DISPLAY",
-            "CMDSERV",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(objects.into_iter().next())
-    }
-
-    // -----------------------------------------------------------------------
-    // Pattern 2 -- List DISPLAY (name + where, returns Vec)
-    // -----------------------------------------------------------------------
-
-    /// Execute the MQSC `DISPLAY QUEUE` command.
-    pub fn display_queue(
+    /// Execute the MQSC `ALTER QMODEL` command.
+    pub fn alter_qmodel(
         &mut self,
         name: Option<&str>,
         request_parameters: Option<&HashMap<String, Value>>,
         response_parameters: Option<&[&str]>,
-        where_clause: Option<&str>,
-    ) -> Result<Vec<HashMap<String, Value>>> {
+    ) -> Result<()> {
         self.mqsc_command(
-            "DISPLAY",
-            "QUEUE",
-            Some(name.unwrap_or("*")),
+            "ALTER",
+            "QMODEL",
+            name,
             request_parameters,
             response_parameters,
-            where_clause,
-        )
+            None,
+        )?;
+        Ok(())
     }
 
-    /// Execute the MQSC `DISPLAY CHANNEL` command.
-    pub fn display_channel(
+    /// Execute the MQSC `ALTER QREMOTE` command.
+    pub fn alter_qremote(
         &mut self,
         name: Option<&str>,
         request_parameters: Option<&HashMap<String, Value>>,
         response_parameters: Option<&[&str]>,
-        where_clause: Option<&str>,
-    ) -> Result<Vec<HashMap<String, Value>>> {
+    ) -> Result<()> {
         self.mqsc_command(
-            "DISPLAY",
+            "ALTER",
+            "QREMOTE",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER SECURITY` command.
+    pub fn alter_security(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "SECURITY",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER SERVICE` command.
+    pub fn alter_service(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "SERVICE",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER SMDS` command.
+    pub fn alter_smds(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "SMDS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER STGCLASS` command.
+    pub fn alter_stgclass(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "STGCLASS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER SUB` command.
+    pub fn alter_sub(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "SUB",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER TOPIC` command.
+    pub fn alter_topic(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "TOPIC",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ALTER TRACE` command.
+    pub fn alter_trace(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ALTER",
+            "TRACE",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `ARCHIVE LOG` command.
+    pub fn archive_log(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "ARCHIVE",
+            "LOG",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `BACKUP CFSTRUCT` command.
+    pub fn backup_cfstruct(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "BACKUP",
+            "CFSTRUCT",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `CLEAR QLOCAL` command.
+    pub fn clear_qlocal(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "CLEAR",
+            "QLOCAL",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `CLEAR TOPICSTR` command.
+    pub fn clear_topicstr(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "CLEAR",
+            "TOPICSTR",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE AUTHINFO` command.
+    pub fn define_authinfo(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "AUTHINFO",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE BUFFPOOL` command.
+    pub fn define_buffpool(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "BUFFPOOL",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE CFSTRUCT` command.
+    pub fn define_cfstruct(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "CFSTRUCT",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE CHANNEL` command.
+    pub fn define_channel(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
             "CHANNEL",
-            Some(name.unwrap_or("*")),
+            Some(name),
             request_parameters,
             response_parameters,
-            where_clause,
-        )
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE COMMINFO` command.
+    pub fn define_comminfo(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "COMMINFO",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE LISTENER` command.
+    pub fn define_listener(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "LISTENER",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE LOG` command.
+    pub fn define_log(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "LOG",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE MAXSMSGS` command.
+    pub fn define_maxsmsgs(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "MAXSMSGS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE NAMELIST` command.
+    pub fn define_namelist(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "NAMELIST",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE PROCESS` command.
+    pub fn define_process(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "PROCESS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE PSID` command.
+    pub fn define_psid(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "PSID",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE QALIAS` command.
+    pub fn define_qalias(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "QALIAS",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE QLOCAL` command.
+    pub fn define_qlocal(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "QLOCAL",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE QMODEL` command.
+    pub fn define_qmodel(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "QMODEL",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE QREMOTE` command.
+    pub fn define_qremote(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "QREMOTE",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE SERVICE` command.
+    pub fn define_service(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "SERVICE",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE STGCLASS` command.
+    pub fn define_stgclass(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "STGCLASS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE SUB` command.
+    pub fn define_sub(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "SUB",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DEFINE TOPIC` command.
+    pub fn define_topic(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DEFINE",
+            "TOPIC",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE AUTHINFO` command.
+    pub fn delete_authinfo(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "AUTHINFO",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE AUTHREC` command.
+    pub fn delete_authrec(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "AUTHREC",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE BUFFPOOL` command.
+    pub fn delete_buffpool(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "BUFFPOOL",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE CFSTRUCT` command.
+    pub fn delete_cfstruct(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "CFSTRUCT",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE CHANNEL` command.
+    pub fn delete_channel(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "CHANNEL",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE COMMINFO` command.
+    pub fn delete_comminfo(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "COMMINFO",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE LISTENER` command.
+    pub fn delete_listener(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "LISTENER",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE NAMELIST` command.
+    pub fn delete_namelist(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "NAMELIST",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE POLICY` command.
+    pub fn delete_policy(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "POLICY",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE PROCESS` command.
+    pub fn delete_process(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "PROCESS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE PSID` command.
+    pub fn delete_psid(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "PSID",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE QALIAS` command.
+    pub fn delete_qalias(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "QALIAS",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE QLOCAL` command.
+    pub fn delete_qlocal(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "QLOCAL",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE QMODEL` command.
+    pub fn delete_qmodel(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "QMODEL",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE QREMOTE` command.
+    pub fn delete_qremote(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "QREMOTE",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE QUEUE` command.
+    pub fn delete_queue(
+        &mut self,
+        name: &str,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "QUEUE",
+            Some(name),
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE SERVICE` command.
+    pub fn delete_service(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "SERVICE",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE STGCLASS` command.
+    pub fn delete_stgclass(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "STGCLASS",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE SUB` command.
+    pub fn delete_sub(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "SUB",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `DELETE TOPIC` command.
+    pub fn delete_topic(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "DELETE",
+            "TOPIC",
+            name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
     }
 
     /// Execute the MQSC `DISPLAY APSTATUS` command.
@@ -230,6 +1287,24 @@ impl MqRestSession {
         )
     }
 
+    /// Execute the MQSC `DISPLAY CHANNEL` command.
+    pub fn display_channel(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+        where_clause: Option<&str>,
+    ) -> Result<Vec<HashMap<String, Value>>> {
+        self.mqsc_command(
+            "DISPLAY",
+            "CHANNEL",
+            Some(name.unwrap_or("*")),
+            request_parameters,
+            response_parameters,
+            where_clause,
+        )
+    }
+
     /// Execute the MQSC `DISPLAY CHINIT` command.
     pub fn display_chinit(
         &mut self,
@@ -300,6 +1375,23 @@ impl MqRestSession {
             response_parameters,
             where_clause,
         )
+    }
+
+    /// Execute the MQSC `DISPLAY CMDSERV` command.
+    pub fn display_cmdserv(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<Option<HashMap<String, Value>>> {
+        let objects = self.mqsc_command(
+            "DISPLAY",
+            "CMDSERV",
+            None,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(objects.into_iter().next())
     }
 
     /// Execute the MQSC `DISPLAY COMMINFO` command.
@@ -518,6 +1610,40 @@ impl MqRestSession {
         )
     }
 
+    /// Execute the MQSC `DISPLAY QMGR` command.
+    pub fn display_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<Option<HashMap<String, Value>>> {
+        let objects = self.mqsc_command(
+            "DISPLAY",
+            "QMGR",
+            None,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(objects.into_iter().next())
+    }
+
+    /// Execute the MQSC `DISPLAY QMSTATUS` command.
+    pub fn display_qmstatus(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<Option<HashMap<String, Value>>> {
+        let objects = self.mqsc_command(
+            "DISPLAY",
+            "QMSTATUS",
+            None,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(objects.into_iter().next())
+    }
+
     /// Execute the MQSC `DISPLAY QSTATUS` command.
     pub fn display_qstatus(
         &mut self,
@@ -530,6 +1656,24 @@ impl MqRestSession {
             "DISPLAY",
             "QSTATUS",
             name,
+            request_parameters,
+            response_parameters,
+            where_clause,
+        )
+    }
+
+    /// Execute the MQSC `DISPLAY QUEUE` command.
+    pub fn display_queue(
+        &mut self,
+        name: Option<&str>,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+        where_clause: Option<&str>,
+    ) -> Result<Vec<HashMap<String, Value>>> {
+        self.mqsc_command(
+            "DISPLAY",
+            "QUEUE",
+            Some(name.unwrap_or("*")),
             request_parameters,
             response_parameters,
             where_clause,
@@ -806,1076 +1950,6 @@ impl MqRestSession {
         )
     }
 
-    // -----------------------------------------------------------------------
-    // Pattern 3a -- Mutating with required name (&str)
-    // -----------------------------------------------------------------------
-
-    /// Execute the MQSC `DEFINE QLOCAL` command.
-    pub fn define_qlocal(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "QLOCAL",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE QREMOTE` command.
-    pub fn define_qremote(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "QREMOTE",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE QALIAS` command.
-    pub fn define_qalias(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "QALIAS",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE QMODEL` command.
-    pub fn define_qmodel(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "QMODEL",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE QUEUE` command.
-    pub fn delete_queue(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "QUEUE",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE CHANNEL` command.
-    pub fn define_channel(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "CHANNEL",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE CHANNEL` command.
-    pub fn delete_channel(
-        &mut self,
-        name: &str,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "CHANNEL",
-            Some(name),
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    // -----------------------------------------------------------------------
-    // Pattern 3a -- Mutating with optional name (Option<&str>)
-    // -----------------------------------------------------------------------
-
-    /// Execute the MQSC `ALTER AUTHINFO` command.
-    pub fn alter_authinfo(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "AUTHINFO",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER BUFFPOOL` command.
-    pub fn alter_buffpool(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "BUFFPOOL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER CFSTRUCT` command.
-    pub fn alter_cfstruct(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "CFSTRUCT",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER CHANNEL` command.
-    pub fn alter_channel(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "CHANNEL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER COMMINFO` command.
-    pub fn alter_comminfo(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "COMMINFO",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER LISTENER` command.
-    pub fn alter_listener(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "LISTENER",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER NAMELIST` command.
-    pub fn alter_namelist(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "NAMELIST",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER PROCESS` command.
-    pub fn alter_process(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "PROCESS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER PSID` command.
-    pub fn alter_psid(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "PSID",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER SECURITY` command.
-    pub fn alter_security(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "SECURITY",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER SERVICE` command.
-    pub fn alter_service(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "SERVICE",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER SMDS` command.
-    pub fn alter_smds(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "SMDS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER STGCLASS` command.
-    pub fn alter_stgclass(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "STGCLASS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER SUB` command.
-    pub fn alter_sub(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "SUB",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER TOPIC` command.
-    pub fn alter_topic(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "TOPIC",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ALTER TRACE` command.
-    pub fn alter_trace(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "TRACE",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `ARCHIVE LOG` command.
-    pub fn archive_log(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ARCHIVE",
-            "LOG",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `BACKUP CFSTRUCT` command.
-    pub fn backup_cfstruct(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "BACKUP",
-            "CFSTRUCT",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `CLEAR QLOCAL` command.
-    pub fn clear_qlocal(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "CLEAR",
-            "QLOCAL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `CLEAR TOPICSTR` command.
-    pub fn clear_topicstr(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "CLEAR",
-            "TOPICSTR",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE AUTHINFO` command.
-    pub fn define_authinfo(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "AUTHINFO",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE BUFFPOOL` command.
-    pub fn define_buffpool(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "BUFFPOOL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE CFSTRUCT` command.
-    pub fn define_cfstruct(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "CFSTRUCT",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE COMMINFO` command.
-    pub fn define_comminfo(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "COMMINFO",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE LISTENER` command.
-    pub fn define_listener(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "LISTENER",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE LOG` command.
-    pub fn define_log(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "LOG",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE MAXSMSGS` command.
-    pub fn define_maxsmsgs(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "MAXSMSGS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE NAMELIST` command.
-    pub fn define_namelist(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "NAMELIST",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE PROCESS` command.
-    pub fn define_process(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "PROCESS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE PSID` command.
-    pub fn define_psid(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "PSID",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE SERVICE` command.
-    pub fn define_service(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "SERVICE",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE STGCLASS` command.
-    pub fn define_stgclass(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "STGCLASS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE SUB` command.
-    pub fn define_sub(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "SUB",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DEFINE TOPIC` command.
-    pub fn define_topic(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DEFINE",
-            "TOPIC",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE AUTHINFO` command.
-    pub fn delete_authinfo(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "AUTHINFO",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE AUTHREC` command.
-    pub fn delete_authrec(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "AUTHREC",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE BUFFPOOL` command.
-    pub fn delete_buffpool(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "BUFFPOOL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE CFSTRUCT` command.
-    pub fn delete_cfstruct(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "CFSTRUCT",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE COMMINFO` command.
-    pub fn delete_comminfo(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "COMMINFO",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE LISTENER` command.
-    pub fn delete_listener(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "LISTENER",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE NAMELIST` command.
-    pub fn delete_namelist(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "NAMELIST",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE POLICY` command.
-    pub fn delete_policy(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "POLICY",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE PROCESS` command.
-    pub fn delete_process(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "PROCESS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE PSID` command.
-    pub fn delete_psid(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "PSID",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE QALIAS` command.
-    pub fn delete_qalias(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "QALIAS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE QLOCAL` command.
-    pub fn delete_qlocal(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "QLOCAL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE QMODEL` command.
-    pub fn delete_qmodel(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "QMODEL",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE QREMOTE` command.
-    pub fn delete_qremote(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "QREMOTE",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE SERVICE` command.
-    pub fn delete_service(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "SERVICE",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE STGCLASS` command.
-    pub fn delete_stgclass(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "STGCLASS",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE SUB` command.
-    pub fn delete_sub(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "SUB",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `DELETE TOPIC` command.
-    pub fn delete_topic(
-        &mut self,
-        name: Option<&str>,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "DELETE",
-            "TOPIC",
-            name,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
     /// Execute the MQSC `MOVE QLOCAL` command.
     pub fn move_qlocal(
         &mut self,
@@ -1905,6 +1979,23 @@ impl MqRestSession {
             "PING",
             "CHANNEL",
             name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `PING QMGR` command.
+    pub fn ping_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "PING",
+            "QMGR",
+            None,
             request_parameters,
             response_parameters,
             None,
@@ -1984,6 +2075,23 @@ impl MqRestSession {
         Ok(())
     }
 
+    /// Execute the MQSC `REFRESH QMGR` command.
+    pub fn refresh_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "REFRESH",
+            "QMGR",
+            None,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
     /// Execute the MQSC `REFRESH SECURITY` command.
     pub fn refresh_security(
         &mut self,
@@ -2049,6 +2157,23 @@ impl MqRestSession {
             "RESET",
             "CLUSTER",
             name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `RESET QMGR` command.
+    pub fn reset_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "RESET",
+            "QMGR",
+            None,
             request_parameters,
             response_parameters,
             None,
@@ -2139,6 +2264,23 @@ impl MqRestSession {
             "RESOLVE",
             "INDOUBT",
             name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `RESUME QMGR` command.
+    pub fn resume_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "RESUME",
+            "QMGR",
+            None,
             request_parameters,
             response_parameters,
             None,
@@ -2308,6 +2450,23 @@ impl MqRestSession {
         Ok(())
     }
 
+    /// Execute the MQSC `START CMDSERV` command.
+    pub fn start_cmdserv(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "START",
+            "CMDSERV",
+            None,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
     /// Execute the MQSC `START LISTENER` command.
     pub fn start_listener(
         &mut self,
@@ -2319,6 +2478,23 @@ impl MqRestSession {
             "START",
             "LISTENER",
             name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `START QMGR` command.
+    pub fn start_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "START",
+            "QMGR",
+            None,
             request_parameters,
             response_parameters,
             None,
@@ -2416,6 +2592,23 @@ impl MqRestSession {
         Ok(())
     }
 
+    /// Execute the MQSC `STOP CMDSERV` command.
+    pub fn stop_cmdserv(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "STOP",
+            "CMDSERV",
+            None,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
     /// Execute the MQSC `STOP CONN` command.
     pub fn stop_conn(
         &mut self,
@@ -2445,6 +2638,23 @@ impl MqRestSession {
             "STOP",
             "LISTENER",
             name,
+            request_parameters,
+            response_parameters,
+            None,
+        )?;
+        Ok(())
+    }
+
+    /// Execute the MQSC `STOP QMGR` command.
+    pub fn stop_qmgr(
+        &mut self,
+        request_parameters: Option<&HashMap<String, Value>>,
+        response_parameters: Option<&[&str]>,
+    ) -> Result<()> {
+        self.mqsc_command(
+            "STOP",
+            "QMGR",
+            None,
             request_parameters,
             response_parameters,
             None,
@@ -2506,163 +2716,6 @@ impl MqRestSession {
         Ok(())
     }
 
-    // -----------------------------------------------------------------------
-    // Pattern 3b -- Mutating without name (passes None)
-    // -----------------------------------------------------------------------
-
-    /// Execute the MQSC `ALTER QMGR` command.
-    pub fn alter_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "ALTER",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `PING QMGR` command.
-    pub fn ping_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "PING",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `REFRESH QMGR` command.
-    pub fn refresh_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "REFRESH",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `RESET QMGR` command.
-    pub fn reset_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "RESET",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `RESUME QMGR` command.
-    pub fn resume_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "RESUME",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `START CMDSERV` command.
-    pub fn start_cmdserv(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "START",
-            "CMDSERV",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `START QMGR` command.
-    pub fn start_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "START",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `STOP CMDSERV` command.
-    pub fn stop_cmdserv(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "STOP",
-            "CMDSERV",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
-    /// Execute the MQSC `STOP QMGR` command.
-    pub fn stop_qmgr(
-        &mut self,
-        request_parameters: Option<&HashMap<String, Value>>,
-        response_parameters: Option<&[&str]>,
-    ) -> Result<()> {
-        self.mqsc_command(
-            "STOP",
-            "QMGR",
-            None,
-            request_parameters,
-            response_parameters,
-            None,
-        )?;
-        Ok(())
-    }
-
     /// Execute the MQSC `SUSPEND QMGR` command.
     pub fn suspend_qmgr(
         &mut self,
@@ -2679,6 +2732,8 @@ impl MqRestSession {
         )?;
         Ok(())
     }
+
+    // END GENERATED MQSC METHODS
 }
 
 #[cfg(test)]
@@ -2810,9 +2865,13 @@ mod tests {
     test_mutating_required_name!(define_qremote);
     test_mutating_required_name!(define_qalias);
     test_mutating_required_name!(define_qmodel);
-    test_mutating_required_name!(delete_queue);
     test_mutating_required_name!(define_channel);
     test_mutating_required_name!(delete_channel);
+    test_mutating_required_name!(delete_qalias);
+    test_mutating_required_name!(delete_qlocal);
+    test_mutating_required_name!(delete_qmodel);
+    test_mutating_required_name!(delete_qremote);
+    test_mutating_required_name!(delete_queue);
 
     // -----------------------------------------------------------------
     // Macro: Pattern 3a — Mutating with optional name (Option<&str>)
@@ -2852,6 +2911,10 @@ mod tests {
     test_mutating_optional_name!(alter_stgclass);
     test_mutating_optional_name!(alter_sub);
     test_mutating_optional_name!(alter_topic);
+    test_mutating_optional_name!(alter_qalias);
+    test_mutating_optional_name!(alter_qlocal);
+    test_mutating_optional_name!(alter_qmodel);
+    test_mutating_optional_name!(alter_qremote);
     test_mutating_optional_name!(alter_trace);
     test_mutating_optional_name!(archive_log);
     test_mutating_optional_name!(backup_cfstruct);
@@ -2881,10 +2944,6 @@ mod tests {
     test_mutating_optional_name!(delete_policy);
     test_mutating_optional_name!(delete_process);
     test_mutating_optional_name!(delete_psid);
-    test_mutating_optional_name!(delete_qalias);
-    test_mutating_optional_name!(delete_qlocal);
-    test_mutating_optional_name!(delete_qmodel);
-    test_mutating_optional_name!(delete_qremote);
     test_mutating_optional_name!(delete_service);
     test_mutating_optional_name!(delete_stgclass);
     test_mutating_optional_name!(delete_sub);
