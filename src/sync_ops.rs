@@ -12,8 +12,10 @@ use crate::session::MqRestSession;
 /// Configuration for synchronous polling operations.
 #[derive(Debug, Clone, Copy)]
 pub struct SyncConfig {
-    timeout_seconds: f64,
-    poll_interval_seconds: f64,
+    /// Maximum wall-clock seconds to wait for the target state.
+    pub timeout_seconds: f64,
+    /// Seconds to sleep between status polls.
+    pub poll_interval_seconds: f64,
 }
 
 impl SyncConfig {
@@ -42,20 +44,6 @@ impl SyncConfig {
             timeout_seconds,
             poll_interval_seconds,
         })
-    }
-
-    /// Maximum wall-clock seconds to wait for the target state.
-    #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn timeout_seconds(&self) -> f64 {
-        self.timeout_seconds
-    }
-
-    /// Seconds to sleep between status polls.
-    #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn poll_interval_seconds(&self) -> f64 {
-        self.poll_interval_seconds
     }
 }
 
@@ -274,7 +262,7 @@ fn start_and_poll(
     let mut polls = 0u32;
     let start_time = Instant::now();
     loop {
-        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds()));
+        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds));
         let all_params: &[&str] = &["all"];
         let status_rows = session.mqsc_command(
             "DISPLAY",
@@ -294,16 +282,14 @@ fn start_and_poll(
             });
         }
         let elapsed = start_time.elapsed().as_secs_f64();
-        if elapsed >= sync_config.timeout_seconds() {
+        if elapsed >= sync_config.timeout_seconds {
             return Err(MqRestError::Timeout {
                 name: name.into(),
                 operation: "start".into(),
                 elapsed,
                 message: format!(
                     "{} '{}' did not reach RUNNING within {}s",
-                    obj_config.start_qualifier,
-                    name,
-                    sync_config.timeout_seconds()
+                    obj_config.start_qualifier, name, sync_config.timeout_seconds
                 ),
             });
         }
@@ -328,7 +314,7 @@ fn stop_and_poll(
     let mut polls = 0u32;
     let start_time = Instant::now();
     loop {
-        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds()));
+        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds));
         let all_params: &[&str] = &["all"];
         let status_rows = session.mqsc_command(
             "DISPLAY",
@@ -356,16 +342,14 @@ fn stop_and_poll(
             });
         }
         let elapsed = start_time.elapsed().as_secs_f64();
-        if elapsed >= sync_config.timeout_seconds() {
+        if elapsed >= sync_config.timeout_seconds {
             return Err(MqRestError::Timeout {
                 name: name.into(),
                 operation: "stop".into(),
                 elapsed,
                 message: format!(
                     "{} '{}' did not reach STOPPED within {}s",
-                    obj_config.stop_qualifier,
-                    name,
-                    sync_config.timeout_seconds()
+                    obj_config.stop_qualifier, name, sync_config.timeout_seconds
                 ),
             });
         }
@@ -413,7 +397,10 @@ mod tests {
     use serde_json::json;
 
     fn fast_config() -> SyncConfig {
-        SyncConfig::new(0.5, 0.01).unwrap()
+        SyncConfig {
+            timeout_seconds: 0.5,
+            poll_interval_seconds: 0.01,
+        }
     }
 
     fn status_response(key: &str, value: &str) -> crate::transport::TransportResponse {
@@ -427,8 +414,8 @@ mod tests {
     #[test]
     fn sync_config_default_values() {
         let config = SyncConfig::default();
-        assert!((config.timeout_seconds() - 30.0).abs() < f64::EPSILON);
-        assert!((config.poll_interval_seconds() - 1.0).abs() < f64::EPSILON);
+        assert!((config.timeout_seconds - 30.0).abs() < f64::EPSILON);
+        assert!((config.poll_interval_seconds - 1.0).abs() < f64::EPSILON);
     }
 
     // ---- has_status ----
@@ -820,8 +807,8 @@ mod tests {
     #[test]
     fn sync_config_new_valid() {
         let config = SyncConfig::new(10.0, 0.5).unwrap();
-        assert!((config.timeout_seconds() - 10.0).abs() < f64::EPSILON);
-        assert!((config.poll_interval_seconds() - 0.5).abs() < f64::EPSILON);
+        assert!((config.timeout_seconds - 10.0).abs() < f64::EPSILON);
+        assert!((config.poll_interval_seconds - 0.5).abs() < f64::EPSILON);
     }
 
     #[test]
