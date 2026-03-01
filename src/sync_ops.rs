@@ -25,9 +25,7 @@ impl SyncConfig {
     pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
         if timeout_seconds <= 0.0 {
             return Err(MqRestError::InvalidConfig {
-                message: format!(
-                    "timeout_seconds must be positive, got {timeout_seconds}"
-                ),
+                message: format!("timeout_seconds must be positive, got {timeout_seconds}"),
             });
         }
         if poll_interval_seconds <= 0.0 {
@@ -298,7 +296,9 @@ fn start_and_poll(
                 elapsed,
                 message: format!(
                     "{} '{}' did not reach RUNNING within {}s",
-                    obj_config.start_qualifier, name, sync_config.timeout_seconds()
+                    obj_config.start_qualifier,
+                    name,
+                    sync_config.timeout_seconds()
                 ),
             });
         }
@@ -358,7 +358,9 @@ fn stop_and_poll(
                 elapsed,
                 message: format!(
                     "{} '{}' did not reach STOPPED within {}s",
-                    obj_config.stop_qualifier, name, sync_config.timeout_seconds()
+                    obj_config.stop_qualifier,
+                    name,
+                    sync_config.timeout_seconds()
                 ),
             });
         }
