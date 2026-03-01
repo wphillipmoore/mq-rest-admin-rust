@@ -1035,7 +1035,9 @@ fn session_state_populated_after_command() {
     let config = load_config();
     let mut session = build_session(&config);
 
-    session.display_qmgr().expect("display_qmgr failed");
+    session
+        .display_qmgr(None, None)
+        .expect("display_qmgr failed");
 
     assert!(
         session.last_http_status.is_some(),
