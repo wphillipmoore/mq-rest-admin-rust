@@ -137,7 +137,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.integration-matrix || '[{"rust-version":"1.92","project-suffix":"1-92","qm1-rest-port":"19483","qm2-rest-port":"19484","qm1-mq-port":"11454","qm2-mq-port":"11455"},{"rust-version":"1.93","project-suffix":"1-93","qm1-rest-port":"19485","qm2-rest-port":"19486","qm1-mq-port":"11456","qm2-mq-port":"11457"}]') }}
+        include: ${{ fromJSON(inputs.integration-matrix || '[{"rust-version":"1.92","project-suffix":"1-92","qm1-rest-port":"9485","qm2-rest-port":"9486","qm1-mq-port":"1456","qm2-mq-port":"1457"},{"rust-version":"1.93","project-suffix":"1-93","qm1-rest-port":"9487","qm2-rest-port":"9488","qm1-mq-port":"1458","qm2-mq-port":"1459"}]') }}
 
     steps:
       - name: Checkout code
