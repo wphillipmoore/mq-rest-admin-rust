@@ -13,7 +13,7 @@ Start the local MQ development environment before running examples:
 ./scripts/dev/mq_seed.sh
 ```
 
-This starts two queue managers (`QM1` on port 9443, `QM2` on port 9444) on a
+This starts two queue managers (`QM1` on port 9483, `QM2` on port 9484) on a
 shared Docker network. See [local MQ container](development/local-mq-container.md) for details.
 
 ## Environment variables
@@ -23,11 +23,11 @@ defaults:
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
-| `MQ_REST_BASE_URL` | `https://localhost:9443/ibmmq/rest/v2` | QM1 REST endpoint |
+| `MQ_REST_BASE_URL` | `https://localhost:9483/ibmmq/rest/v2` | QM1 REST endpoint |
 | `MQ_QMGR_NAME` | `QM1` | Queue manager name |
 | `MQ_ADMIN_USER` | `mqadmin` | Admin username |
 | `MQ_ADMIN_PASSWORD` | `mqadmin` | Admin password |
-| `MQ_REST_BASE_URL_QM2` | `https://localhost:9444/ibmmq/rest/v2` | QM2 REST endpoint (multi-QM examples) |
+| `MQ_REST_BASE_URL_QM2` | `https://localhost:9484/ibmmq/rest/v2` | QM2 REST endpoint (multi-QM examples) |
 | `DEPTH_THRESHOLD_PCT` | `80` | Warning threshold for queue depth monitor |
 
 ## Running examples

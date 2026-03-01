@@ -160,13 +160,20 @@ git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../
 Container details:
 
 - Queue managers: `QM1` and `QM2`
-- QM1 ports: `1414` (MQ listener), `9443` (mqweb console + REST API)
-- QM2 ports: `1415` (MQ listener), `9444` (mqweb console + REST API)
+- QM1 ports: `1454` (MQ listener), `9483` (mqweb console + REST API)
+- QM2 ports: `1455` (MQ listener), `9484` (mqweb console + REST API)
 - Admin credentials: `mqadmin` / `mqadmin`
 - Read-only credentials: `mqreader` / `mqreader`
-- QM1 REST base URL: `https://localhost:9443/ibmmq/rest/v2`
-- QM2 REST base URL: `https://localhost:9444/ibmmq/rest/v2`
+- QM1 REST base URL: `https://localhost:9483/ibmmq/rest/v2`
+- QM2 REST base URL: `https://localhost:9484/ibmmq/rest/v2`
 - Object prefix: `DEV.*`
+
+Port assignments are explicit in each `scripts/dev/mq_*.sh` script via
+`QM1_REST_PORT`, `QM2_REST_PORT`, `QM1_MQ_PORT`, and `QM2_MQ_PORT` exports.
+Rust uses offset ports (9483/9484, 1454/1455) to avoid conflicts with other
+language repos. See the
+[port allocation table](https://github.com/wphillipmoore/mq-rest-admin-common)
+in mq-rest-admin-common for the full cross-language map.
 
 ## Architecture
 

@@ -20,8 +20,8 @@ queue managers.
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `MQ_REST_BASE_URL` | `https://localhost:9443/ibmmq/rest/v2` | QM1 REST API base URL |
-| `MQ_REST_BASE_URL_QM2` | `https://localhost:9444/ibmmq/rest/v2` | QM2 REST API base URL |
+| `MQ_REST_BASE_URL` | `https://localhost:9483/ibmmq/rest/v2` | QM1 REST API base URL |
+| `MQ_REST_BASE_URL_QM2` | `https://localhost:9484/ibmmq/rest/v2` | QM2 REST API base URL |
 | `MQ_ADMIN_USER` | `mqadmin` | Admin username |
 | `MQ_ADMIN_PASSWORD` | `mqadmin` | Admin password |
 | `MQ_IMAGE` | `icr.io/ibm-messaging/mq:latest` | Container image |
@@ -33,7 +33,7 @@ use mq_rest_admin::{MqRestSession, Credentials};
 
 // Route commands to QM2 through QM1
 let session = MqRestSession::builder()
-    .rest_base_url("https://localhost:9443/ibmmq/rest/v2")
+    .rest_base_url("https://localhost:9483/ibmmq/rest/v2")
     .qmgr_name("QM2")
     .credentials(Credentials::Basic {
         username: "mqadmin".into(),

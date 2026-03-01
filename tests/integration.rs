@@ -72,12 +72,12 @@ fn load_config() -> IntegrationConfig {
     let default_identity = MQ_DEV_ADMIN_IDENTITY.to_owned();
     IntegrationConfig {
         rest_base_url: env::var("MQ_REST_BASE_URL")
-            .unwrap_or_else(|_| "https://localhost:9443/ibmmq/rest/v2".into()),
+            .unwrap_or_else(|_| "https://localhost:9483/ibmmq/rest/v2".into()),
         admin_user: env::var("MQ_ADMIN_USER").unwrap_or_else(|_| default_identity.clone()),
         admin_password: env::var("MQ_ADMIN_PASSWORD").unwrap_or_else(|_| default_identity),
         qmgr_name: env::var("MQ_QMGR_NAME").unwrap_or_else(|_| "QM1".into()),
         qm2_rest_base_url: env::var("MQ_REST_BASE_URL_QM2")
-            .unwrap_or_else(|_| "https://localhost:9444/ibmmq/rest/v2".into()),
+            .unwrap_or_else(|_| "https://localhost:9484/ibmmq/rest/v2".into()),
         qm2_qmgr_name: env::var("MQ_QMGR_NAME_QM2").unwrap_or_else(|_| "QM2".into()),
     }
 }
