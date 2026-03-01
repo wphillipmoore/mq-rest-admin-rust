@@ -12,10 +12,48 @@ use crate::session::MqRestSession;
 /// Configuration for synchronous polling operations.
 #[derive(Debug, Clone, Copy)]
 pub struct SyncConfig {
+    timeout_seconds: f64,
+    poll_interval_seconds: f64,
+}
+
+impl SyncConfig {
+    /// Create a new `SyncConfig` with validated parameters.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MqRestError::InvalidConfig`] if either value is not positive.
+    pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
+        if timeout_seconds <= 0.0 {
+            return Err(MqRestError::InvalidConfig {
+                message: format!(
+                    "timeout_seconds must be positive, got {timeout_seconds}"
+                ),
+            });
+        }
+        if poll_interval_seconds <= 0.0 {
+            return Err(MqRestError::InvalidConfig {
+                message: format!(
+                    "poll_interval_seconds must be positive, got {poll_interval_seconds}"
+                ),
+            });
+        }
+        Ok(Self {
+            timeout_seconds,
+            poll_interval_seconds,
+        })
+    }
+
     /// Maximum wall-clock seconds to wait for the target state.
-    pub timeout_seconds: f64,
+    #[must_use]
+    pub fn timeout_seconds(&self) -> f64 {
+        self.timeout_seconds
+    }
+
     /// Seconds to sleep between status polls.
-    pub poll_interval_seconds: f64,
+    #[must_use]
+    pub fn poll_interval_seconds(&self) -> f64 {
+        self.poll_interval_seconds
+    }
 }
 
 impl Default for SyncConfig {
@@ -233,7 +271,7 @@ fn start_and_poll(
     let mut polls = 0u32;
     let start_time = Instant::now();
     loop {
-        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds));
+        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds()));
         let all_params: &[&str] = &["all"];
         let status_rows = session.mqsc_command(
             "DISPLAY",
@@ -253,14 +291,14 @@ fn start_and_poll(
             });
         }
         let elapsed = start_time.elapsed().as_secs_f64();
-        if elapsed >= sync_config.timeout_seconds {
+        if elapsed >= sync_config.timeout_seconds() {
             return Err(MqRestError::Timeout {
                 name: name.into(),
                 operation: "start".into(),
                 elapsed,
                 message: format!(
                     "{} '{}' did not reach RUNNING within {}s",
-                    obj_config.start_qualifier, name, sync_config.timeout_seconds
+                    obj_config.start_qualifier, name, sync_config.timeout_seconds()
                 ),
             });
         }
@@ -285,7 +323,7 @@ fn stop_and_poll(
     let mut polls = 0u32;
     let start_time = Instant::now();
     loop {
-        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds));
+        thread::sleep(Duration::from_secs_f64(sync_config.poll_interval_seconds()));
         let all_params: &[&str] = &["all"];
         let status_rows = session.mqsc_command(
             "DISPLAY",
@@ -313,14 +351,14 @@ fn stop_and_poll(
             });
         }
         let elapsed = start_time.elapsed().as_secs_f64();
-        if elapsed >= sync_config.timeout_seconds {
+        if elapsed >= sync_config.timeout_seconds() {
             return Err(MqRestError::Timeout {
                 name: name.into(),
                 operation: "stop".into(),
                 elapsed,
                 message: format!(
                     "{} '{}' did not reach STOPPED within {}s",
-                    obj_config.stop_qualifier, name, sync_config.timeout_seconds
+                    obj_config.stop_qualifier, name, sync_config.timeout_seconds()
                 ),
             });
         }
@@ -368,10 +406,7 @@ mod tests {
     use serde_json::json;
 
     fn fast_config() -> SyncConfig {
-        SyncConfig {
-            timeout_seconds: 0.5,
-            poll_interval_seconds: 0.01,
-        }
+        SyncConfig::new(0.5, 0.01).unwrap()
     }
 
     fn status_response(key: &str, value: &str) -> crate::transport::TransportResponse {
@@ -385,8 +420,8 @@ mod tests {
     #[test]
     fn sync_config_default_values() {
         let config = SyncConfig::default();
-        assert!((config.timeout_seconds - 30.0).abs() < f64::EPSILON);
-        assert!((config.poll_interval_seconds - 1.0).abs() < f64::EPSILON);
+        assert!((config.timeout_seconds() - 30.0).abs() < f64::EPSILON);
+        assert!((config.poll_interval_seconds() - 1.0).abs() < f64::EPSILON);
     }
 
     // ---- has_status ----
@@ -771,5 +806,50 @@ mod tests {
         let mut session = mock_session(transport);
         let result = session.stop_channel_sync("MY.CH", Some(fast_config()));
         assert!(result.is_err());
+    }
+
+    // ---- SyncConfig validation ----
+
+    #[test]
+    fn sync_config_new_valid() {
+        let config = SyncConfig::new(10.0, 0.5).unwrap();
+        assert!((config.timeout_seconds() - 10.0).abs() < f64::EPSILON);
+        assert!((config.poll_interval_seconds() - 0.5).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn sync_config_new_zero_timeout_rejected() {
+        let err = SyncConfig::new(0.0, 1.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("timeout_seconds must be positive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn sync_config_new_negative_timeout_rejected() {
+        let err = SyncConfig::new(-1.0, 1.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("timeout_seconds must be positive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn sync_config_new_zero_poll_interval_rejected() {
+        let err = SyncConfig::new(30.0, 0.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("poll_interval_seconds must be positive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn sync_config_new_negative_poll_interval_rejected() {
+        let err = SyncConfig::new(30.0, -1.0).unwrap_err();
+        assert!(
+            format!("{err}").contains("poll_interval_seconds must be positive"),
+            "unexpected error: {err}"
+        );
     }
 }

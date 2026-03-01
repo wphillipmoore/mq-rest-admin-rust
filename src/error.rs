@@ -167,6 +167,13 @@ pub enum MqRestError {
         message: String,
     },
 
+    /// Configuration is invalid.
+    #[error("{message}")]
+    InvalidConfig {
+        /// Human-readable description of the invalid configuration.
+        message: String,
+    },
+
     /// Attribute mapping failed.
     #[error(transparent)]
     Mapping(#[from] MappingError),
@@ -363,6 +370,14 @@ mod tests {
             message: "timed out".into(),
         };
         assert_eq!(format!("{err}"), "timed out");
+    }
+
+    #[test]
+    fn mq_rest_error_invalid_config_display() {
+        let err = MqRestError::InvalidConfig {
+            message: "timeout must be positive".into(),
+        };
+        assert_eq!(format!("{err}"), "timeout must be positive");
     }
 
     #[test]
