@@ -1027,6 +1027,35 @@ fn gateway_session_properties() {
 }
 
 // ---------------------------------------------------------------------------
+// Session state test
+// ---------------------------------------------------------------------------
+
+#[test]
+fn session_state_populated_after_command() {
+    let config = load_config();
+    let mut session = build_session(&config);
+
+    session.display_qmgr().expect("display_qmgr failed");
+
+    assert!(
+        session.last_http_status.is_some(),
+        "last_http_status should be populated"
+    );
+    assert!(
+        session.last_response_text.is_some(),
+        "last_response_text should be populated"
+    );
+    assert!(
+        session.last_response_payload.is_some(),
+        "last_response_payload should be populated"
+    );
+    assert!(
+        session.last_command_payload.is_some(),
+        "last_command_payload should be populated"
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Example function integration tests
 // ---------------------------------------------------------------------------
 
