@@ -24,14 +24,9 @@ impl SyncConfig {
     /// # Errors
     ///
     /// Returns [`MqRestError::InvalidConfig`] if either value is not positive.
-    #[allow(clippy::question_mark)]
     pub fn new(timeout_seconds: f64, poll_interval_seconds: f64) -> Result<Self> {
-        if let Err(e) = check_positive("timeout_seconds", timeout_seconds) {
-            return Err(e);
-        }
-        if let Err(e) = check_positive("poll_interval_seconds", poll_interval_seconds) {
-            return Err(e);
-        }
+        check_positive("timeout_seconds", timeout_seconds)?;
+        check_positive("poll_interval_seconds", poll_interval_seconds)?;
         Ok(Self {
             timeout_seconds,
             poll_interval_seconds,
@@ -367,10 +362,9 @@ fn check_positive(field: &str, value: f64) -> Result<()> {
     if value > 0.0 {
         return Ok(());
     }
-    let mut msg = String::from(field);
-    msg.push_str(" must be positive, got ");
-    msg.push_str(&value.to_string());
-    Err(MqRestError::InvalidConfig { message: msg })
+    Err(MqRestError::InvalidConfig {
+        message: format!("{field} must be positive, got {value}"),
+    })
 }
 
 fn has_status(
