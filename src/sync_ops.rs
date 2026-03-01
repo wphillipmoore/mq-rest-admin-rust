@@ -365,12 +365,12 @@ fn restart(
 
 fn check_positive(field: &str, value: f64) -> Result<()> {
     if value > 0.0 {
-        Ok(())
-    } else {
-        Err(MqRestError::InvalidConfig {
-            message: format!("{field} must be positive, got {value}"),
-        })
+        return Ok(());
     }
+    let mut msg = String::from(field);
+    msg.push_str(" must be positive, got ");
+    msg.push_str(&value.to_string());
+    Err(MqRestError::InvalidConfig { message: msg })
 }
 
 fn has_status(
