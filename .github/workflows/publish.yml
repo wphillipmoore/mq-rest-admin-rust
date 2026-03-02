@@ -70,6 +70,12 @@ jobs:
         with:
           subject-path: "target/release/libmq_rest_admin*"
 
+      - name: Publish to crates.io
+        if: steps.crates_check.outputs.status == 'not_found'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish
+
       - name: Generate SBOM
         if: steps.tag_check.outputs.exists == 'false'
         uses: wphillipmoore/standard-actions/actions/security/trivy@develop
@@ -94,12 +100,6 @@ jobs:
 
             - [Documentation](https://wphillipmoore.github.io/mq-rest-admin-rust/)
           release-artifacts: dist/*
-
-      - name: Publish to crates.io
-        if: steps.crates_check.outputs.status == 'not_found'
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish
 
       - name: Generate app token for bump PR
         if: steps.tag_check.outputs.exists == 'false'
