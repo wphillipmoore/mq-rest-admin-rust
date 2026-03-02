@@ -1,0 +1,36 @@
+[package]
+name = "mq-rest-admin"
+version = "1.2.0"
+edition = "2024"
+rust-version = "1.92"
+description = "Rust wrapper for the IBM MQ administrative REST API"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/wphillipmoore/mq-rest-admin-rust"
+keywords = ["ibm-mq", "rest-api", "mqsc", "message-queue"]
+categories = ["api-bindings"]
+readme = "README.md"
+documentation = "https://wphillipmoore.github.io/mq-rest-admin-rust/"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"], default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+base64 = "0.22"
+
+[dev-dependencies]
+paste = "1"
+
+[features]
+integration = []
+examples = []
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+cargo = { level = "deny", priority = -1 }
+multiple_crate_versions = "allow"

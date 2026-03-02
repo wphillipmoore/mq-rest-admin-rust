@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      rust-versions:
+        description: >-
+          JSON array of {rust-version, coverage-lines, coverage-regions}
+          objects for the unit-test matrix. Default runs the full matrix.
+        type: string
+        default: ""
+      integration-matrix:
+        description: >-
+          JSON array of objects for the integration-test matrix.
+          Default (empty) runs the full matrix with per-version ports.
+        type: string
+        default: ""
+      run-security:
+        description: >-
+          Run security scanner jobs (set to 'false' to skip).
+        type: string
+        default: "true"
+      run-release-gates:
+        description: >-
+          Run release gate checks (set to 'false' to skip).
+        type: string
+        default: "true"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # Security and standards (shared reusable workflow)
+  # ---------------------------------------------------------------------------
+  security-and-standards:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@develop
+    with:
+      language: "rust"
+      run-standards: ${{ inputs.run-release-gates || 'true' }}
+      run-security: ${{ inputs.run-security || 'true' }}
+    permissions:
+      contents: read
+      security-events: write
+
+  # ---------------------------------------------------------------------------
+  # Dependency audit
+  # ---------------------------------------------------------------------------
+  dependency-audit:
+    name: "ci: dependency-audit"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: "1.93"
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: Run cargo deny check
+        run: cargo deny check
+
+  # ---------------------------------------------------------------------------
+  # Release gates
+  # ---------------------------------------------------------------------------
+  release-gates:
+    name: "release: gates"
+    if: ${{ inputs.run-release-gates != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip on non-PR events
+        if: github.event_name != 'pull_request'
+        run: echo "Not a pull request; skipping release gates."
+
+      - name: Checkout code
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Version divergence gate (PRs targeting develop)
+        if: github.event_name == 'pull_request' && github.base_ref == 'develop'
+        uses: wphillipmoore/standard-actions/actions/release-gates/version-divergence@develop
+        with:
+          head-version-command: grep -oP '^version\s*=\s*"\K[^"]+' Cargo.toml
+          main-version-command: git show origin/main:Cargo.toml | grep -oP '^version\s*=\s*"\K[^"]+'
+
+  # ---------------------------------------------------------------------------
+  # Unit tests — matrix over Rust versions
+  # ---------------------------------------------------------------------------
+  test-and-validate:
+    name: "test: unit (${{ matrix.rust-version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.rust-versions || '[{"rust-version":"1.92","coverage-lines":"99","coverage-regions":"99"},{"rust-version":"1.93","coverage-lines":"100","coverage-regions":"100"}]') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+          components: clippy, rustfmt, llvm-tools
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov --locked
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy
+
+      - name: Run tests with coverage
+        run: cargo llvm-cov --features examples --fail-under-lines ${{ matrix.coverage-lines }} --fail-under-regions ${{ matrix.coverage-regions }}
+
+  # ---------------------------------------------------------------------------
+  # Integration tests — matrix over Rust versions with unique MQ ports
+  # ---------------------------------------------------------------------------
+  integration-tests:
+    name: "test: integration (${{ matrix.rust-version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.integration-matrix || '[{"rust-version":"1.92","project-suffix":"1-92","qm1-rest-port":"9485","qm2-rest-port":"9486","qm1-mq-port":"1456","qm2-mq-port":"1457"},{"rust-version":"1.93","project-suffix":"1-93","qm1-rest-port":"9487","qm2-rest-port":"9488","qm1-mq-port":"1458","qm2-mq-port":"1459"}]') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+
+      - name: Setup MQ environment
+        uses: wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
+        with:
+          project-name: "mqrest-rust-${{ matrix.project-suffix }}"
+          qm1-rest-port: ${{ matrix.qm1-rest-port }}
+          qm2-rest-port: ${{ matrix.qm2-rest-port }}
+          qm1-mq-port: ${{ matrix.qm1-mq-port }}
+          qm2-mq-port: ${{ matrix.qm2-mq-port }}
+
+      - name: Run integration tests
+        env:
+          MQ_REST_BASE_URL: https://localhost:${{ matrix.qm1-rest-port }}/ibmmq/rest/v2
+          MQ_REST_BASE_URL_QM2: https://localhost:${{ matrix.qm2-rest-port }}/ibmmq/rest/v2
+        run: cargo test --features integration,examples

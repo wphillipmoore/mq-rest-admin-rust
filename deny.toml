@@ -1,0 +1,43 @@
+[advisories]
+version = 2
+ignore = [
+    # paste is a dev-dependency used only for test macro identifier
+    # concatenation. No security concern from an unmaintained proc-macro
+    # in test code.
+    "RUSTSEC-2024-0436",
+]
+
+[licenses]
+version = 2
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-3-Clause",
+    "CDLA-Permissive-2.0",
+    "GPL-3.0-or-later",
+    "ISC",
+    "MIT",
+    "Unicode-3.0",
+]
+
+[bans]
+multiple-versions = "deny"
+
+# Transitive duplicates from reqwest's dependency chain (ring vs socket2/tokio
+# pull different windows-sys versions). Not actionable from this crate.
+skip = [
+    { crate = "windows-sys" },
+    { crate = "windows-targets" },
+    { crate = "windows_aarch64_gnullvm" },
+    { crate = "windows_aarch64_msvc" },
+    { crate = "windows_i686_gnu" },
+    { crate = "windows_i686_gnullvm" },
+    { crate = "windows_i686_msvc" },
+    { crate = "windows_x86_64_gnu" },
+    { crate = "windows_x86_64_gnullvm" },
+    { crate = "windows_x86_64_msvc" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
