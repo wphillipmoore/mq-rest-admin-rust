@@ -118,6 +118,6 @@ jobs:
           version-regex: '^(version\s*=\s*").*("\s*)$'
           version-replacement: '\g<1>{version}\2'
           version-regex-multiline: "true"
-          develop-version-command: grep -oP '^version\s*=\s*"\K[^"]+' Cargo.toml
+          develop-version-command: grep -oP '^version\s*=\s*"\K[^"]+'
           extra-files: Cargo.lock
           app-token: ${{ steps.app-token.outputs.token }}
