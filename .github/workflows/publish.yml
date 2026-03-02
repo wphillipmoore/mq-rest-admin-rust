@@ -60,7 +60,9 @@ jobs:
 
       - name: Build release
         if: steps.tag_check.outputs.exists == 'false'
-        run: cargo build --release
+        run: |
+          cargo build --release
+          mkdir -p dist
 
       - name: Attest build provenance
         if: steps.tag_check.outputs.exists == 'false'
