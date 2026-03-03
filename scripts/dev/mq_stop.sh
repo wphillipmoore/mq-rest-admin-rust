@@ -11,6 +11,10 @@ if [ ! -d "$mq_dev_env" ]; then
 fi
 
 export COMPOSE_PROJECT_NAME="mqrest-rust"
+export QM1_REST_PORT=9483
+export QM2_REST_PORT=9484
+export QM1_MQ_PORT=1454
+export QM2_MQ_PORT=1455
 
 cd "$mq_dev_env"
 exec scripts/mq_stop.sh

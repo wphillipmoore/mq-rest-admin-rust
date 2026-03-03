@@ -9,7 +9,7 @@
 //! ```
 //!
 //! Requires both QM1 and QM2 to be running. Set `MQ_REST_BASE_URL_QM2`
-//! to the QM2 REST endpoint (default: `https://localhost:9444/ibmmq/rest/v2`).
+//! to the QM2 REST endpoint (default: `https://localhost:9484/ibmmq/rest/v2`).
 
 use std::env;
 
@@ -20,9 +20,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let password = env::var("MQ_ADMIN_PASSWORD").unwrap_or_else(|_| "mqadmin".into());
 
     let qm1_url = env::var("MQ_REST_BASE_URL")
-        .unwrap_or_else(|_| "https://localhost:9443/ibmmq/rest/v2".into());
+        .unwrap_or_else(|_| "https://localhost:9483/ibmmq/rest/v2".into());
     let qm2_url = env::var("MQ_REST_BASE_URL_QM2")
-        .unwrap_or_else(|_| "https://localhost:9444/ibmmq/rest/v2".into());
+        .unwrap_or_else(|_| "https://localhost:9484/ibmmq/rest/v2".into());
 
     let mut qm1 = MqRestSession::builder(
         &qm1_url,

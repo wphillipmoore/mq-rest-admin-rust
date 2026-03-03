@@ -14,7 +14,7 @@ use mq_rest_admin::{Credentials, MqRestSession, examples};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rest_base_url = env::var("MQ_REST_BASE_URL")
-        .unwrap_or_else(|_| "https://localhost:9443/ibmmq/rest/v2".into());
+        .unwrap_or_else(|_| "https://localhost:9483/ibmmq/rest/v2".into());
     let qmgr_name = env::var("MQ_QMGR_NAME").unwrap_or_else(|_| "QM1".into());
     let username = env::var("MQ_ADMIN_USER").unwrap_or_else(|_| "mqadmin".into());
     let password = env::var("MQ_ADMIN_PASSWORD").unwrap_or_else(|_| "mqadmin".into());
