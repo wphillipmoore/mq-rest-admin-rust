@@ -3157,7 +3157,7 @@ can be run with <code>cargo run --example &lt;name&gt;</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./scripts/dev/mq_start.sh
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>./scripts/dev/mq_seed.sh
 </code></pre></div>
-<p>This starts two queue managers (<code>QM1</code> on port 9443, <code>QM2</code> on port 9444) on a
+<p>This starts two queue managers (<code>QM1</code> on port 9483, <code>QM2</code> on port 9484) on a
 shared Docker network. See <a href="../development/local-mq-container/">local MQ container</a> for details.</p>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
 <p>All examples read connection details from environment variables with sensible
@@ -3173,7 +3173,7 @@ defaults:</p>
 <tbody>
 <tr>
 <td><code>MQ_REST_BASE_URL</code></td>
-<td><code>https://localhost:9443/ibmmq/rest/v2</code></td>
+<td><code>https://localhost:9483/ibmmq/rest/v2</code></td>
 <td>QM1 REST endpoint</td>
 </tr>
 <tr>
@@ -3193,7 +3193,7 @@ defaults:</p>
 </tr>
 <tr>
 <td><code>MQ_REST_BASE_URL_QM2</code></td>
-<td><code>https://localhost:9444/ibmmq/rest/v2</code></td>
+<td><code>https://localhost:9484/ibmmq/rest/v2</code></td>
 <td>QM2 REST endpoint (multi-QM examples)</td>
 </tr>
 <tr>
