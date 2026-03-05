@@ -16,8 +16,6 @@ translation between Rust idioms and native MQSC parameter names.
 
 **Status**: Pre-alpha (initial setup)
 
-**Canonical Standards**: This repository follows standards at <https://github.com/wphillipmoore/standards-and-conventions> (local path: `../standards-and-conventions` if available)
-
 ## Development Commands
 
 ### Standard Tooling
