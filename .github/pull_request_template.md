@@ -13,8 +13,7 @@
 
 ## Testing
 
-- markdownlint
-- `validate-local-rust`
+- `st-docker-run -- st-validate`
 
 ## Notes
 

@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   publish:
-    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.4
+    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.5
     permissions:
       attestations: write
       contents: write
@@ -21,8 +21,7 @@ jobs:
       pull-requests: write
     with:
       ecosystem: rust
-      version-command: >-
-        grep -oP '^version\s*=\s*"\K[^"]+' Cargo.toml
+      version-command: st-version show
       registry-check-command: >-
         status_code=$(curl -s -o /dev/null -w "%{http_code}"
         "https://crates.io/api/v1/crates/mq-rest-admin/$VERSION");
@@ -47,8 +46,7 @@ jobs:
       version-regex: '^(version\s*=\s*").*("\s*)$'
       version-replacement: '\g<1>{version}\2'
       version-regex-multiline: "true"
-      develop-version-command: >-
-        grep -oP '^version\s*=\s*"\K[^"]+'
+      develop-version-command: st-version show
       extra-files: Cargo.lock
     secrets:
       APP_ID: ${{ secrets.APP_ID }}

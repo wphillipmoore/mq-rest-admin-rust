@@ -99,73 +99,25 @@ translation between Rust idioms and native MQSC parameter names.
 
 ## Development Commands
 
-### Standard Tooling
-
-```bash
-cd ../standard-tooling && uv sync                                                # Install standard-tooling
-export PATH="../standard-tooling/.venv/bin:../standard-tooling/scripts/bin:$PATH" # Put tools on PATH
-git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks               # Enable git hooks
-```
-
-### Two-Tier CI Model
-
-Testing is split across two tiers with increasing scope and cost:
-
-**Tier 1 — Local pre-commit (seconds):** Fast smoke tests in a single
-container. Enforced via the `.githooks` pre-commit gate on every commit.
-No MQ, no matrix.
-
-```bash
-./scripts/dev/test.sh        # Tests in dev-rust:1.93
-./scripts/dev/lint.sh        # Lint checks in dev-rust:1.93
-./scripts/dev/typecheck.sh   # Type checking in dev-rust:1.93
-./scripts/dev/audit.sh       # Security audit in dev-rust:1.93
-```
-
-**Tier 2 — PR CI (~8-10 min):** Triggers on `pull_request`. Full version
-matrix (["1.92", "1.93"]), all integration tests, security scanners
-(CodeQL, Trivy, Semgrep), standards compliance, and release gates. Workflow:
-`.github/workflows/ci.yml`.
-
-Push-CI was retired once `st-validate-local` reached parity with PR-CI.
-See wphillipmoore/standard-actions#176 for the parity audit and rationale.
-
 ### Environment Setup
 
 ```bash
+git config core.hooksPath .githooks  # Enable the pre-commit gate
 rustup show
 ```
-
-### Docker-First Testing
-
-All tests can run inside containers — Docker is the only host prerequisite.
-The `dev-rust:1.93` image is built from
-`../standard-tooling/docker/rust/`.
-
-```bash
-# Build the dev image (one-time, from standard-tooling)
-cd ../standard-tooling && docker/build.sh
-
-# Run tests in container
-./scripts/dev/test.sh
-
-# Run lint checks in container
-./scripts/dev/lint.sh
-
-# Run security audit in container
-./scripts/dev/audit.sh
-```
-
-Environment overrides:
-
-- `DOCKER_DEV_IMAGE` — override the container image (default: `dev-rust:1.93`)
-- `DOCKER_TEST_CMD` — override the test command
 
 ### Validation
 
 ```bash
-validate-local-rust
+st-docker-run -- st-validate   # Canonical validation (runs in dev container)
 ```
+
+### CI
+
+PR CI uses v1.5 reusable workflows from standard-actions: quality
+(lint + typecheck), test, audit, security, and release. Bespoke jobs
+remain for unit tests (per-version coverage thresholds) and integration
+tests (MQ containers).
 
 ### Testing
 
