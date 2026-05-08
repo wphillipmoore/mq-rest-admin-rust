@@ -21,19 +21,15 @@
 Canonical local validation command:
 
 ```bash
-validate-local-rust
+st-docker-run -- st-validate
 ```
 
 ## Tooling requirement
 
 Required for daily workflow:
 
-- Rust 1.92+ (via rust-tooling.toml), cargo-deny, cargo-llvm-cov
-- `markdownlint` (required for docs validation and PR pre-submission)
-
-Required for integration testing:
-
-- Docker (for local MQ container environment)
+- `st-docker-run` and `st-validate` from standard-tooling
+- Docker (for dev container and local MQ environment)
 
 ## Merge strategy override
 
