@@ -1,3 +1,4 @@
+# https://github.com/wphillipmoore/standard-actions/blob/develop/.github/workflows/README.md
 name: CI
 
 on:
@@ -41,45 +42,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
-  quality:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
-    with:
-      language: rust
-      versions: ${{ inputs.rust-versions || '["1.92", "1.93"]' }}
-
-  test:
-    name: "test / unit / ${{ matrix.rust-version }}"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include: >-
-          ${{ fromJSON(inputs.test-matrix || '[
-            {"rust-version":"1.92","coverage-lines":"99","coverage-regions":"99"},
-            {"rust-version":"1.93","coverage-lines":"100","coverage-regions":"100"}
-          ]') }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust-version }}
-          components: llvm-tools
-
-      - name: Install cargo-llvm-cov
-        run: cargo install cargo-llvm-cov --locked
-
-      - name: Run tests with coverage
-        # yamllint disable-line rule:line-length
-        run: >-
-          cargo llvm-cov
-          --features examples
-          --fail-under-lines ${{ matrix.coverage-lines }}
-          --fail-under-regions ${{ matrix.coverage-regions }}
-
   audit:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
     with:
@@ -124,6 +86,12 @@ jobs:
             https://localhost:${{ matrix.qm2-rest-port }}/ibmmq/rest/v2
         run: cargo test --features integration,examples
 
+  quality:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
+    with:
+      language: rust
+      versions: ${{ inputs.rust-versions || '["1.92", "1.93"]' }}
+
   security:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
     with:
@@ -134,8 +102,40 @@ jobs:
       contents: read
       security-events: write
 
-  release:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-release.yml@v1.5
+  test:
+    name: "test / unit / ${{ matrix.rust-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: >-
+          ${{ fromJSON(inputs.test-matrix || '[
+            {"rust-version":"1.92","coverage-lines":"99","coverage-regions":"99"},
+            {"rust-version":"1.93","coverage-lines":"100","coverage-regions":"100"}
+          ]') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+          components: llvm-tools
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov --locked
+
+      - name: Run tests with coverage
+        # yamllint disable-line rule:line-length
+        run: >-
+          cargo llvm-cov
+          --features examples
+          --fail-under-lines ${{ matrix.coverage-lines }}
+          --fail-under-regions ${{ matrix.coverage-regions }}
+
+  version:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-version-bump.yml@v1.5
     with:
       language: rust
       run-release: ${{ inputs.run-release != 'false' }}
