@@ -14,21 +14,21 @@
 - Before modifying any files, check the current branch with `git status -sb`.
 - If on `develop`, create a short-lived `feature/*` branch or ask for explicit approval to proceed on `develop`.
 - If approval is granted to work on `develop`, call it out in the response and proceed only for that user-approved scope.
-- Enable repository git hooks before committing: `git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks`.
+- Enable repository git hooks before committing: `git config core.hooksPath ../vergil-tooling/scripts/lib/git-hooks`.
 
 ## Local validation
 
 Canonical local validation command:
 
 ```bash
-st-docker-run -- st-validate
+vrg-docker-run -- vrg-validate
 ```
 
 ## Tooling requirement
 
 Required for daily workflow:
 
-- `st-docker-run` and `st-validate` from standard-tooling
+- `vrg-docker-run` and `vrg-validate` from vergil-tooling
 - Docker (for dev container and local MQ environment)
 
 ## Merge strategy override
@@ -42,13 +42,13 @@ Required for daily workflow:
 
 ## Commit and PR scripts
 
-AI agents **must** use the `st-commit` and `st-submit-pr` scripts for commits
+AI agents **must** use the `vrg-commit` and `vrg-submit-pr` scripts for commits
 and PR submission. Do not construct commit messages or PR bodies manually.
 
 ### Committing
 
 ```bash
-st-commit \
+vrg-commit \
   --type TYPE --message MESSAGE --agent AGENT \
   [--scope SCOPE] [--body BODY]
 ```
@@ -61,12 +61,12 @@ st-commit \
 - `--body` (optional): detailed commit body
 
 The script resolves the correct `Co-Authored-By` identity from
-`standard-tooling.toml` and the git hooks validate the result.
+`vergil.toml` and the git hooks validate the result.
 
 ### Submitting PRs
 
 ```bash
-st-submit-pr \
+vrg-submit-pr \
   --issue NUMBER --summary TEXT \
   [--linkage KEYWORD] [--title TEXT] \
   [--notes TEXT] [--dry-run]

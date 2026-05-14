@@ -1,4 +1,4 @@
-# https://github.com/wphillipmoore/standard-actions/blob/develop/.github/workflows/README.md
+# https://github.com/vergil-project/vergil-actions/blob/develop/.github/workflows/README.md
 name: CI
 
 on:
@@ -43,7 +43,7 @@ concurrency:
 
 jobs:
   audit:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-audit.yml@v2.0
     with:
       language: rust
       versions: ${{ inputs.rust-versions || '["1.92", "1.93"]' }}
@@ -70,7 +70,7 @@ jobs:
 
       - name: Setup MQ environment
         # yamllint disable-line rule:line-length
-        uses: wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
+        uses: mq-rest-admin-project/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
         with:
           project-name: "mqrest-rust-${{ matrix.project-suffix }}"
           qm1-rest-port: ${{ matrix.qm1-rest-port }}
@@ -87,13 +87,13 @@ jobs:
         run: cargo test --features integration,examples
 
   quality:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-quality.yml@v2.0
     with:
       language: rust
       versions: ${{ inputs.rust-versions || '["1.92", "1.93"]' }}
 
   security:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-security.yml@v2.0
     with:
       language: rust
       run-standards: ${{ inputs.run-release != 'false' }}
@@ -135,7 +135,7 @@ jobs:
           --fail-under-regions ${{ matrix.coverage-regions }}
 
   version:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-version-bump.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-version-bump.yml@v2.0
     with:
       language: rust
       run-release: ${{ inputs.run-release != 'false' }}
