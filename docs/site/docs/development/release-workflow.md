@@ -22,7 +22,7 @@ any time by changing the version to a minor or major bump instead.
    ```bash
    git checkout -b release/X.Y.Z develop
    git-cliff --tag develop-vX.Y.Z -o CHANGELOG.md
-   st-commit --type chore --scope release --message "update changelog for vX.Y.Z" --agent claude
+   vrg-commit --type chore --scope release --message "update changelog for vX.Y.Z" --agent claude
    ```
 
 3. **Merge to main** — Open a PR from `release/X.Y.Z` to `main` and

@@ -32,10 +32,9 @@ mq-rest-admin depends on several sibling repositories:
 
 | Repository | Purpose |
 | --- | --- |
-| [mq-rest-admin-rust](https://github.com/wphillipmoore/mq-rest-admin-rust) | This project |
-| [standards-and-conventions](https://github.com/wphillipmoore/standards-and-conventions) | Canonical project standards (referenced by `AGENTS.md` and git hooks) |
-| [standard-tooling](https://github.com/wphillipmoore/standard-tooling) | Development tools, Docker images, and git hooks |
-| [mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment) | Dockerized MQ test infrastructure (local and CI) |
+| [mq-rest-admin-rust](https://github.com/mq-rest-admin-project/mq-rest-admin-rust) | This project |
+| [vergil-tooling](https://github.com/vergil-project/vergil-tooling) | Canonical project standards, development tools, Docker images, and git hooks |
+| [mq-rest-admin-dev-environment](https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment) | Dockerized MQ test infrastructure (local and CI) |
 
 ## Recommended directory layout
 
@@ -44,17 +43,15 @@ Clone all repositories as siblings:
 ```text
 ~/dev/
 ├── mq-rest-admin-rust/
-├── standards-and-conventions/
-├── standard-tooling/
+├── vergil-tooling/
 └── mq-rest-admin-dev-environment/
 ```
 
 ```bash
 cd ~/dev
-git clone https://github.com/wphillipmoore/mq-rest-admin-rust.git
-git clone https://github.com/wphillipmoore/standards-and-conventions.git
-git clone https://github.com/wphillipmoore/standard-tooling.git
-git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-rust.git
+git clone https://github.com/vergil-project/vergil-tooling.git
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment.git
 ```
 
 ## Initial setup
@@ -69,10 +66,10 @@ cargo build
 cargo test
 
 # Enable standard tooling and git hooks
-cd ../standard-tooling && uv sync
-export PATH="../standard-tooling/.venv/bin:../standard-tooling/scripts/bin:$PATH"
+cd ../vergil-tooling && uv sync
+export PATH="../vergil-tooling/.venv/bin:../vergil-tooling/scripts/bin:$PATH"
 cd ../mq-rest-admin-rust
-git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks
+git config core.hooksPath ../vergil-tooling/scripts/lib/git-hooks
 ```
 
 ## Running validation
@@ -120,7 +117,7 @@ validation. The pipeline includes:
 
 - **Unit tests** on the minimum supported Rust version (1.92)
 - **Integration tests** against real MQ queue managers via the shared
-  `wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq` action
+  `mq-rest-admin-project/mq-rest-admin-dev-environment/.github/actions/setup-mq` action
 - **Standards compliance** (clippy, fmt, markdown lint, commit
   messages, repository profile)
 - **Dependency audit** (`cargo-deny`)

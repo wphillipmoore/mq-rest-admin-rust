@@ -40,7 +40,7 @@ for queue in &queues {
 
 ## Documentation
 
-Full documentation: <https://wphillipmoore.github.io/mq-rest-admin-rust/>
+Full documentation: <https://mq-rest-admin-project.github.io/mq-rest-admin-rust/>
 
 ## Development
 

@@ -2,9 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Standards reference**: <https://github.com/wphillipmoore/standards-and-conventions>
-— active standards documentation lives in the standard-tooling repository under `docs/`.
-Repository profile: `standard-tooling.toml`.
+**Standards reference**: <https://github.com/vergil-project/vergil-tooling>
+— active standards documentation lives in the vergil-tooling repository under `docs/`.
+Repository profile: `vergil.toml`.
 
 ## Memory management
 
@@ -15,9 +15,9 @@ plugin/skill issue) before writing. See that file for the full
 workflow.
 
 Available skills:
-- `/standard-tooling:memory-init` — set up or update the policy header
+- `/vergil:memory-init` — set up or update the policy header
   in a project's `MEMORY.md`.
-- `/standard-tooling:memory-audit` — structured collaborative review
+- `/vergil:memory-audit` — structured collaborative review
   of memory files.
 
 ## Parallel AI agent development
@@ -28,9 +28,9 @@ while preserving shared project memory (which Claude Code derives from the
 session's starting CWD).
 
 **Canonical spec:**
-[`standard-tooling/docs/specs/worktree-convention.md`](https://github.com/wphillipmoore/standard-tooling/blob/develop/docs/specs/worktree-convention.md)
+[`vergil-tooling/docs/specs/worktree-convention.md`](https://github.com/vergil-project/vergil-tooling/blob/develop/docs/specs/worktree-convention.md)
 — full rationale, trust model, failure modes, and memory-path implications.
-The canonical text lives in `standard-tooling`; this section is the local
+The canonical text lives in `vergil-tooling`; this section is the local
 on-ramp.
 
 ### Structure
@@ -109,12 +109,12 @@ rustup show
 ### Validation
 
 ```bash
-st-docker-run -- st-validate   # Canonical validation (runs in dev container)
+vrg-docker-run -- vrg-validate   # Canonical validation (runs in dev container)
 ```
 
 ### CI
 
-PR CI uses v1.5 reusable workflows from standard-actions: quality
+PR CI uses v2.0 reusable workflows from vergil-actions: quality
 (lint + typecheck), test, audit, security, and release. Bespoke jobs
 remain for unit tests (per-version coverage thresholds) and integration
 tests (MQ containers).
@@ -128,13 +128,13 @@ cargo test
 ### Local MQ Container
 
 The MQ development environment is owned by the
-[mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment)
+[mq-rest-admin-dev-environment](https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment)
 repository. Clone it as a sibling directory before running lifecycle
 scripts:
 
 ```bash
 # Prerequisite (one-time)
-git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
 
 # Start the containerized MQ queue managers
 ./scripts/dev/mq_start.sh
@@ -167,7 +167,7 @@ Port assignments are explicit in each `scripts/dev/mq_*.sh` script via
 `QM1_REST_PORT`, `QM2_REST_PORT`, `QM1_MQ_PORT`, and `QM2_MQ_PORT` exports.
 Rust uses offset ports (9483/9484, 1454/1455) to avoid conflicts with other
 language repos. See the
-[port allocation table](https://github.com/wphillipmoore/mq-rest-admin-common)
+[port allocation table](https://github.com/mq-rest-admin-project/mq-rest-admin-common)
 in mq-rest-admin-common for the full cross-language map.
 
 ## Architecture

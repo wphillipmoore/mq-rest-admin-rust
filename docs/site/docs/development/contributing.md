@@ -64,7 +64,7 @@ Or use the containerized scripts:
 - **Claude Code**: reads `CLAUDE.md`, which loads repository standards
   via include directives.
 - **Codex and other agents**: reads `AGENTS.md`, which loads the same
-  standards plus shared skills from the `standards-and-conventions`
+  standards plus shared skills from the `vergil-tooling`
   repository.
 
 ### Quality expectations
